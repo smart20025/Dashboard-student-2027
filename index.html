@@ -24821,6 +24821,22 @@ if(typeof window !== 'undefined' && !window.XLSX) try { window.XLSX = XLSX; } ca
   }
   .grade-pill .count{ margin-left:5px; opacity:0.7; font-weight:600; }
 
+  .grade-dropdown{ margin-bottom:14px; }
+  .grade-select{
+    width:100%;
+    max-width:320px;
+    border:1px solid var(--line);
+    background:var(--paper);
+    color:var(--ink);
+    padding:7px 11px;
+    border-radius:8px;
+    font-size:12.5px;
+    font-weight:600;
+    font-family:'Inter',sans-serif;
+    cursor:pointer;
+  }
+  .grade-select:hover, .grade-select:focus{ border-color:var(--primary); outline:none; }
+
   /* ---------- Filter panel ---------- */
   .filter-panel{
     background:#fff;
@@ -25082,25 +25098,31 @@ if(typeof window !== 'undefined' && !window.XLSX) try { window.XLSX = XLSX; } ca
     <div class="chart-card">
       <h3>Second language by class</h3>
       <div class="chart-note" id="langGradeNote">Grades within all stages — tap a grade to compare classes</div>
-      <div class="grade-pills" id="langGradePills"><button class="grade-pill active">All grades <span class="count">2132</span></button><button class="grade-pill">Baby class <span class="count">44</span></button><button class="grade-pill">KG 1 <span class="count">174</span></button><button class="grade-pill">KG 2 <span class="count">192</span></button><button class="grade-pill">Primary 1 <span class="count">293</span></button><button class="grade-pill">Primary 2 <span class="count">213</span></button><button class="grade-pill">Primary 3 <span class="count">206</span></button><button class="grade-pill">Primary 4 <span class="count">207</span></button><button class="grade-pill">Primary 5 <span class="count">169</span></button><button class="grade-pill">Primary 6 <span class="count">151</span></button><button class="grade-pill">Prep 1 <span class="count">109</span></button><button class="grade-pill">Prep 2 <span class="count">102</span></button><button class="grade-pill">Prep 3 <span class="count">105</span></button><button class="grade-pill">Sec 1 <span class="count">62</span></button><button class="grade-pill">Sec 2 <span class="count">64</span></button><button class="grade-pill">Sec 3 <span class="count">41</span></button></div>
+      <div class="grade-dropdown" id="langGradePills"></div>
       <div class="chart-holder"><canvas id="chartLangGrade" style="box-sizing: border-box; display: block; height: 250px; width: 598.4px;" width="748" height="312"></canvas></div>
     </div>
     <div class="chart-card">
       <h3>Boys &amp; girls by class</h3>
       <div class="chart-note" id="genderGradeNote">Grades within all stages — tap a grade to compare classes</div>
-      <div class="grade-pills" id="genderGradePills"><button class="grade-pill active">All grades <span class="count">2132</span></button><button class="grade-pill">Baby class <span class="count">44</span></button><button class="grade-pill">KG 1 <span class="count">174</span></button><button class="grade-pill">KG 2 <span class="count">192</span></button><button class="grade-pill">Primary 1 <span class="count">293</span></button><button class="grade-pill">Primary 2 <span class="count">213</span></button><button class="grade-pill">Primary 3 <span class="count">206</span></button><button class="grade-pill">Primary 4 <span class="count">207</span></button><button class="grade-pill">Primary 5 <span class="count">169</span></button><button class="grade-pill">Primary 6 <span class="count">151</span></button><button class="grade-pill">Prep 1 <span class="count">109</span></button><button class="grade-pill">Prep 2 <span class="count">102</span></button><button class="grade-pill">Prep 3 <span class="count">105</span></button><button class="grade-pill">Sec 1 <span class="count">62</span></button><button class="grade-pill">Sec 2 <span class="count">64</span></button><button class="grade-pill">Sec 3 <span class="count">41</span></button></div>
+      <div class="grade-dropdown" id="genderGradePills"></div>
       <div class="chart-holder"><canvas id="chartGenderGrade" style="box-sizing: border-box; display: block; height: 250px; width: 598.4px;" width="748" height="312"></canvas></div>
     </div>
     <div class="chart-card">
       <h3>Student level by class</h3>
       <div class="chart-note" id="stageCompareNote">Student level within all stages — tap a grade to compare classes</div>
-      <div class="grade-pills" id="stageComparePills"><button class="grade-pill active">All grades <span class="count">2132</span></button><button class="grade-pill">Baby class <span class="count">44</span></button><button class="grade-pill">KG 1 <span class="count">174</span></button><button class="grade-pill">KG 2 <span class="count">192</span></button><button class="grade-pill">Primary 1 <span class="count">293</span></button><button class="grade-pill">Primary 2 <span class="count">213</span></button><button class="grade-pill">Primary 3 <span class="count">206</span></button><button class="grade-pill">Primary 4 <span class="count">207</span></button><button class="grade-pill">Primary 5 <span class="count">169</span></button><button class="grade-pill">Primary 6 <span class="count">151</span></button><button class="grade-pill">Prep 1 <span class="count">109</span></button><button class="grade-pill">Prep 2 <span class="count">102</span></button><button class="grade-pill">Prep 3 <span class="count">105</span></button><button class="grade-pill">Sec 1 <span class="count">62</span></button><button class="grade-pill">Sec 2 <span class="count">64</span></button><button class="grade-pill">Sec 3 <span class="count">41</span></button></div>
+      <div class="grade-dropdown" id="stageComparePills"></div>
       <div class="chart-holder"><canvas id="chartStageGender" style="box-sizing: border-box; display: block; height: 250px; width: 598.4px;" width="748" height="312"></canvas></div>
     </div>
     <div class="chart-card">
       <h3>Division split</h3>
       <div class="chart-note">Arabic section vs. Language section</div>
       <div class="chart-holder donut"><canvas id="chartDivision" style="box-sizing: border-box; display: block; height: 230px; width: 598.4px;" width="748" height="287"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>Students by grade</h3>
+      <div class="chart-note" id="gradeCountNote">Grades within all stages — pick a grade to see students per class</div>
+      <div class="grade-dropdown" id="gradeCountPills"></div>
+      <div class="chart-holder"><canvas id="chartGradeCount"></canvas></div>
     </div>
   </div>
 
@@ -25126,6 +25148,10 @@ if(typeof window !== 'undefined' && !window.XLSX) try { window.XLSX = XLSX; } ca
     <div class="field">
       <label for="fGender">Gender</label>
       <select id="fGender"><option value="">All</option><option value="Female">Female</option><option value="Male">Male</option></select>
+    </div>
+    <div class="field">
+      <label for="fBus">Bus</label>
+      <select id="fBus"><option value="">All</option><option value="Yes">Subscribed</option><option value="No">Not subscribed</option></select>
     </div>
     <div class="field">
       <label for="fBusLine">Bus line</label>
@@ -25888,6 +25914,7 @@ let currentDivision = 'All';
 let drillGrade = null; // when set, the language-by-class chart drills into New_class values for this grade
 let genderDrillGrade = null; // same idea, for the boys/girls-by-class chart
 let levelDrillGrade = null; // when set, the student-level-by-class chart drills into New_class values for this grade
+let countDrillGrade = null; // when set, the students-by-grade chart drills into New_class values for this grade
 let currentPage = 1;
 const PAGE_SIZE = 40;
 let charts = {};
@@ -25912,9 +25939,10 @@ function loadData(rows){
   drillGrade = null;
   genderDrillGrade = null;
   levelDrillGrade = null;
+  countDrillGrade = null;
   currentPage = 1;
   document.getElementById('fSearch').value = '';
-  ['fGrade','fClass','fGender','fBusLine','fLang'].forEach(id => document.getElementById(id).value = '');
+  ['fGrade','fClass','fGender','fBus','fBusLine','fLang'].forEach(id => document.getElementById(id).value = '');
   render();
 }
 
@@ -25985,6 +26013,7 @@ function setStage(stage){
   drillGrade = null;
   genderDrillGrade = null;
   levelDrillGrade = null;
+  countDrillGrade = null;
   document.querySelectorAll('.stage-tab:not(.division-tab)').forEach(b=>{
     b.classList.toggle('active', b.dataset.stage === stage);
   });
@@ -25997,6 +26026,7 @@ function setDivision(division){
   drillGrade = null;
   genderDrillGrade = null;
   levelDrillGrade = null;
+  countDrillGrade = null;
   document.querySelectorAll('.division-tab').forEach(b=>{
     b.classList.toggle('active', b.dataset.division === division);
   });
@@ -26009,6 +26039,7 @@ function getFilters(){
     grade: document.getElementById('fGrade').value,
     cls: document.getElementById('fClass').value,
     gender: document.getElementById('fGender').value,
+    bus: document.getElementById('fBus').value,
     busLine: document.getElementById('fBusLine').value,
     lang2: document.getElementById('fLang').value,
   };
@@ -26021,6 +26052,7 @@ function matchesCommonFilters(d, f){
   if(f.grade && d.grade !== f.grade) return false;
   if(f.cls && d.cls !== f.cls) return false;
   if(f.gender && d.gender !== f.gender) return false;
+  if(f.bus && d.bus !== f.bus) return false;
   if(f.busLine && d.busLine !== f.busLine) return false;
   if(f.lang2 && d.lang2 !== f.lang2) return false;
   if(f.search){
@@ -26105,7 +26137,7 @@ function countBy(rows, key){
 }
 
 function renderCharts(){
-  [renderLangGradeChart, renderGenderGradeChart, renderStageGenderChart, renderDivisionChart].forEach(fn=>{
+  [renderLangGradeChart, renderGenderGradeChart, renderStageGenderChart, renderDivisionChart, renderGradeCountChart].forEach(fn=>{
     try{ fn(); }catch(e){ console.error(fn.name, e); }
   });
 }
@@ -26157,6 +26189,28 @@ function naturalSort(a,b){
   return String(a).localeCompare(String(b), undefined, {numeric:true, sensitivity:'base'});
 }
 
+// Shared dropdown used by every grade-scoped chart below (replaces the old
+// row-of-buttons grade pills with a single <select>, since a grade can be
+// one of 15+ values). `rows` is the row-set the counts are computed against,
+// `current` is the currently drilled-into grade (or null for "All grades"),
+// and `onSelect(grade|null)` is called when the person picks a new option.
+function renderGradeDropdown(containerId, rows, availableGrades, current, onSelect){
+  const holder = document.getElementById(containerId);
+  if(!holder) return;
+  const select = document.createElement('select');
+  select.className = 'grade-select';
+  const options = [`<option value="">All grades (${rows.length.toLocaleString()})</option>`];
+  availableGrades.forEach(g=>{
+    const count = rows.filter(d=>d.grade===g).length;
+    options.push(`<option value="${escapeHtml(g)}">${escapeHtml(g)} (${count.toLocaleString()})</option>`);
+  });
+  select.innerHTML = options.join('');
+  select.value = current && availableGrades.includes(current) ? current : '';
+  select.addEventListener('change', ()=> onSelect(select.value || null));
+  holder.innerHTML = '';
+  holder.appendChild(select);
+}
+
 // Second language, broken down by class/grade — scoped to whichever stage
 // tab is currently selected (all grades when "All stages" is active).
 // Clicking a grade pill drills the same chart down into New_class values.
@@ -26197,22 +26251,7 @@ function renderLangGradeChart(){
 }
 
 function renderGradePills(availableGrades){
-  const holder = document.getElementById('langGradePills');
-  if(!holder) return;
-  holder.innerHTML = '';
-  const allBtn = document.createElement('button');
-  allBtn.className = 'grade-pill' + (drillGrade ? '' : ' active');
-  allBtn.innerHTML = `All grades <span class="count">${filtered.length}</span>`;
-  allBtn.addEventListener('click', ()=>{ drillGrade = null; render(); });
-  holder.appendChild(allBtn);
-  availableGrades.forEach(g=>{
-    const btn = document.createElement('button');
-    btn.className = 'grade-pill' + (drillGrade === g ? ' active' : '');
-    const count = filtered.filter(d=>d.grade===g).length;
-    btn.innerHTML = `${escapeHtml(g)} <span class="count">${count}</span>`;
-    btn.addEventListener('click', ()=>{ drillGrade = g; render(); });
-    holder.appendChild(btn);
-  });
+  renderGradeDropdown('langGradePills', filtered, availableGrades, drillGrade, (g)=>{ drillGrade = g; render(); });
 }
 
 // Boys vs. girls, broken down by class/grade — scoped to whichever stage
@@ -26253,22 +26292,7 @@ function renderGenderGradeChart(){
 }
 
 function renderGenderGradePills(availableGrades){
-  const holder = document.getElementById('genderGradePills');
-  if(!holder) return;
-  holder.innerHTML = '';
-  const allBtn = document.createElement('button');
-  allBtn.className = 'grade-pill' + (genderDrillGrade ? '' : ' active');
-  allBtn.innerHTML = `All grades <span class="count">${filtered.length}</span>`;
-  allBtn.addEventListener('click', ()=>{ genderDrillGrade = null; render(); });
-  holder.appendChild(allBtn);
-  availableGrades.forEach(g=>{
-    const btn = document.createElement('button');
-    btn.className = 'grade-pill' + (genderDrillGrade === g ? ' active' : '');
-    const count = filtered.filter(d=>d.grade===g).length;
-    btn.innerHTML = `${escapeHtml(g)} <span class="count">${count}</span>`;
-    btn.addEventListener('click', ()=>{ genderDrillGrade = g; render(); });
-    holder.appendChild(btn);
-  });
+  renderGradeDropdown('genderGradePills', filtered, availableGrades, genderDrillGrade, (g)=>{ genderDrillGrade = g; render(); });
 }
 
 // Student level, broken down by class/grade — scoped to whichever stage tab
@@ -26315,22 +26339,7 @@ function renderStageGenderChart(){
 }
 
 function renderStageComparePills(rows, availableGrades){
-  const holder = document.getElementById('stageComparePills');
-  if(!holder) return;
-  holder.innerHTML = '';
-  const allBtn = document.createElement('button');
-  allBtn.className = 'grade-pill' + (levelDrillGrade ? '' : ' active');
-  allBtn.innerHTML = `All grades <span class="count">${rows.length}</span>`;
-  allBtn.addEventListener('click', ()=>{ levelDrillGrade = null; render(); });
-  holder.appendChild(allBtn);
-  availableGrades.forEach(g=>{
-    const btn = document.createElement('button');
-    btn.className = 'grade-pill' + (levelDrillGrade === g ? ' active' : '');
-    const count = rows.filter(d=>d.grade===g).length;
-    btn.innerHTML = `${escapeHtml(g)} <span class="count">${count}</span>`;
-    btn.addEventListener('click', ()=>{ levelDrillGrade = g; render(); });
-    holder.appendChild(btn);
-  });
+  renderGradeDropdown('stageComparePills', rows, availableGrades, levelDrillGrade, (g)=>{ levelDrillGrade = g; render(); });
 }
 
 function renderDivisionChart(){
@@ -26345,6 +26354,40 @@ function renderDivisionChart(){
       responsive:true, maintainAspectRatio:false, cutout:'62%',
       plugins:{ legend:{ position:'bottom', labels:{ usePointStyle:true, boxWidth:8, font:{family:'Inter',size:11.5}, color:COLORS.ink } } }
     }
+  });
+}
+
+// Plain student counts by grade — scoped to whichever stage/division tab and
+// filters are active. Picking a grade from the dropdown drills the same
+// chart down into per-class (New_class) counts within that grade.
+function renderGradeCountChart(){
+  const rows = filtered;
+  const availableGrades = GRADE_ORDER.filter(g => rows.some(d=>d.grade===g));
+  if(countDrillGrade && !availableGrades.includes(countDrillGrade)) countDrillGrade = null;
+
+  renderGradeDropdown('gradeCountPills', rows, availableGrades, countDrillGrade, (g)=>{ countDrillGrade = g; render(); });
+
+  const note = document.getElementById('gradeCountNote');
+  let labels, dataRows, groupKey;
+  if(countDrillGrade){
+    dataRows = rows.filter(d => d.grade === countDrillGrade);
+    labels = uniqueSorted(dataRows.map(r=>r.cls)).sort(naturalSort);
+    groupKey = 'cls';
+    if(note) note.textContent = `${countDrillGrade} — ${dataRows.length.toLocaleString()} student${dataRows.length===1?'':'s'} — students per class`;
+  } else {
+    dataRows = rows;
+    labels = availableGrades;
+    groupKey = 'grade';
+    if(note) note.textContent = `Grades within ${stageScopeLabel()} — pick a grade to see students per class`;
+  }
+
+  const data = labels.map(l => dataRows.filter(r=>r[groupKey]===l).length);
+  destroyChart('gradeCount');
+  charts.gradeCount = new Chart(document.getElementById('chartGradeCount'), {
+    type:'bar',
+    data:{ labels, datasets:[{ label:'Students', data, backgroundColor:COLORS.primary, borderRadius:4, maxBarThickness: countDrillGrade ? 30 : 22 }] },
+    options: { ...baseGridOptions(), plugins:{ legend:{ display:false } }, layout:{ padding:{ top:22 } } },
+    plugins:[ valueLabelPlugin() ]
   });
 }
 
@@ -26396,19 +26439,20 @@ function renderTable(){
 }
 
 // ---------- events ----------
-['fSearch','fGrade','fClass','fGender','fBusLine','fLang'].forEach(id=>{
+['fSearch','fGrade','fClass','fGender','fBus','fBusLine','fLang'].forEach(id=>{
   const el = document.getElementById(id);
   el.addEventListener(el.tagName==='INPUT' ? 'input' : 'change', ()=>{ currentPage = 1; render(); });
 });
 document.getElementById('resetBtn').addEventListener('click', ()=>{
   document.getElementById('fSearch').value = '';
-  ['fGrade','fClass','fGender','fBusLine','fLang'].forEach(id => document.getElementById(id).value = '');
+  ['fGrade','fClass','fGender','fBus','fBusLine','fLang'].forEach(id => document.getElementById(id).value = '');
   currentStage = 'All';
   currentDivision = 'All';
   currentPage = 1;
   drillGrade = null;
   genderDrillGrade = null;
   levelDrillGrade = null;
+  countDrillGrade = null;
   document.querySelectorAll('.stage-tab:not(.division-tab)').forEach(b=> b.classList.toggle('active', b.dataset.stage==='All'));
   document.querySelectorAll('.division-tab').forEach(b=> b.classList.toggle('active', b.dataset.division==='All'));
   render();
@@ -26488,7 +26532,10 @@ function rows2dToRecords(rows2d){
     }
     rec.bus = (rec.bus === '1' || rec.bus === '1.0') ? 'Yes' : 'No';
     if(['0','لم يسجل',''].includes(rec.lang2)) rec.lang2 = 'Not Registered';
-    if(rec.busLine === '') rec.busLine = 'Not Assigned';
+    // Bus line only makes sense for students actually subscribed to the bus.
+    // If not subscribed, clear any bus line value that might still be in the
+    // sheet; if subscribed with no line given yet, default to "Not Assigned".
+    rec.busLine = (rec.bus === 'Yes' && rec.busLine !== '') ? rec.busLine : 'Not Assigned';
     out.push(rec);
   }
   return out;
