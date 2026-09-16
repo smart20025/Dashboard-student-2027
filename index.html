@@ -24837,6 +24837,109 @@ if(typeof window !== 'undefined' && !window.XLSX) try { window.XLSX = XLSX; } ca
   }
   .grade-select:hover, .grade-select:focus{ border-color:var(--primary); outline:none; }
 
+  /* ---------- Report builder modal ---------- */
+  .report-overlay{
+    display:none;
+    position:fixed; inset:0;
+    background:rgba(15,30,40,0.55);
+    z-index:1000;
+    align-items:center; justify-content:center;
+    padding:20px;
+  }
+  .report-overlay.open{ display:flex; }
+  .report-modal{
+    background:var(--paper);
+    border-radius:14px;
+    width:100%; max-width:640px;
+    max-height:88vh;
+    display:flex; flex-direction:column;
+    box-shadow:0 20px 60px rgba(0,0,0,0.35);
+  }
+  .report-modal-head{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 22px;
+    border-bottom:1px solid var(--line);
+  }
+  .report-modal-head h3{ font-size:16px; font-weight:800; }
+  .report-close{
+    background:none; border:none; cursor:pointer;
+    font-size:18px; color:var(--ink-soft);
+    line-height:1; padding:4px 8px; border-radius:6px;
+  }
+  .report-close:hover{ background:var(--grid); color:var(--ink); }
+  .report-step{ padding:20px 22px; overflow-y:auto; }
+  .report-step-hint{ font-size:12.5px; color:var(--ink-soft); margin-bottom:14px; }
+  .report-header-field{ margin:0 0 16px; }
+  .report-header-field label{ display:block; font-size:11.5px; font-weight:700; color:var(--ink-soft); margin-bottom:5px; }
+  .report-header-field textarea{ width:100%; box-sizing:border-box; border:1px solid var(--line); background:var(--paper); color:var(--ink); padding:9px 10px; border-radius:8px; font:600 13px/1.45 Inter, sans-serif; resize:vertical; min-height:58px; }
+  .report-header-field textarea:focus{ outline:none; border-color:var(--primary); box-shadow:0 0 0 2px rgba(0,81,124,.10); }
+  .report-filter-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(180px, 1fr));
+    gap:12px;
+  }
+  .report-filter-field label{
+    display:block; font-size:11.5px; font-weight:700;
+    color:var(--ink-soft); margin-bottom:5px;
+  }
+  .report-filter-field select{
+    width:100%; border:1px solid var(--line); background:var(--paper);
+    color:var(--ink); padding:7px 9px; border-radius:8px; font-size:12.5px;
+  }
+  .report-orientation-choice{ display:flex; gap:16px; }
+  .report-orientation-btn{
+    flex:1; display:flex; flex-direction:column; align-items:center; gap:10px;
+    border:2px solid var(--line); background:var(--paper);
+    border-radius:12px; padding:18px 12px; cursor:pointer;
+    font-size:13px; font-weight:700; color:var(--ink);
+  }
+  .report-orientation-btn.active{ border-color:var(--primary); color:var(--primary-700); background:var(--grid); }
+  .orientation-icon{ border:2px solid currentColor; border-radius:4px; }
+  .portrait-icon{ width:34px; height:46px; }
+  .landscape-icon{ width:46px; height:34px; }
+  .report-columns-actions{ display:flex; gap:10px; margin-bottom:12px; }
+  .report-columns-actions button{
+    background:none; border:1px solid var(--line); border-radius:7px;
+    padding:5px 12px; font-size:11.5px; font-weight:700; color:var(--ink-soft); cursor:pointer;
+  }
+  .report-columns-actions button:hover{ border-color:var(--primary); color:var(--primary-700); }
+  .report-columns-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(160px, 1fr));
+    gap:10px;
+  }
+  .report-col-check{
+    display:flex; align-items:center; gap:7px;
+    font-size:12.5px; color:var(--ink);
+    border:1px solid var(--line); border-radius:8px; padding:7px 9px;
+    cursor:pointer;
+  }
+  .report-col-check input{ cursor:pointer; }
+  .report-modal-foot{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 22px; border-top:1px solid var(--line);
+  }
+  .report-match-count{ font-size:12px; color:var(--ink-soft); font-weight:700; }
+  .report-modal-buttons{ display:flex; gap:10px; }
+
+  /* Printable report: hidden on screen, revealed only when printing */
+  #reportPrintArea{ display:none; }
+  @media print{
+    body *{ visibility:hidden; }
+    #reportPrintArea, #reportPrintArea *{ visibility:visible; }
+    #reportPrintArea{
+      display:block;
+      position:absolute; inset:0; padding:20px;
+    }
+    .report-print-title{ font-size:18px; font-weight:800; margin-bottom:4px; white-space:pre-wrap; }
+    .report-print-meta{ font-size:11px; color:#666; margin-bottom:14px; }
+    .report-print-table{ width:100%; border-collapse:collapse; font-size:11px; }
+    .report-print-table th, .report-print-table td{
+      border:1px solid #ccc; padding:5px 7px; text-align:left;
+    }
+    .report-print-table th{ background:#f0f0f0; }
+  }
+
   /* ---------- Filter panel ---------- */
   .filter-panel{
     background:#fff;
@@ -25131,6 +25234,10 @@ if(typeof window !== 'undefined' && !window.XLSX) try { window.XLSX = XLSX; } ca
       <h2>Find a student</h2>
       <p>Search by name or class, or narrow the list with any combination of filters.</p>
     </div>
+    <button class="btn-upload" id="openReportBtn" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6"></path><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line></svg>
+      Generate report (PDF)
+    </button>
   </div>
   <div class="filter-panel">
     <div class="field search">
@@ -25156,6 +25263,10 @@ if(typeof window !== 'undefined' && !window.XLSX) try { window.XLSX = XLSX; } ca
     <div class="field">
       <label for="fBusLine">Bus line</label>
       <select id="fBusLine"><option value="">All bus lines</option><option value="1">1</option><option value="10">10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option><option value="15">15</option><option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="2">2</option><option value="20">20</option><option value="21">21</option><option value="22">22</option><option value="23">23</option><option value="24">24</option><option value="25">25</option><option value="26">26</option><option value="27">27</option><option value="29">29</option><option value="3">3</option><option value="30">30</option><option value="31">31</option><option value="32">32</option><option value="33">33</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="Not Assigned">Not Assigned</option></select>
+    <div class="field">
+      <label for="fCourses">Courses</label>
+      <select id="fCourses"><option value="">All courses</option></select>
+    </div>
     </div>
     <div class="field">
       <label for="fLang">Second language</label>
@@ -25179,6 +25290,7 @@ if(typeof window !== 'undefined' && !window.XLSX) try { window.XLSX = XLSX; } ca
             <th>Stage</th>
             <th>Bus</th>
             <th>Bus line</th>
+            <th>Courses</th>
             <th>Emergency phone</th>
             <th>Mother's phone</th>
             <th>Father's phone</th>
@@ -25885,6 +25997,59 @@ if(typeof window !== 'undefined' && !window.XLSX) try { window.XLSX = XLSX; } ca
   <footer class="foot">Student Insights Dashboard · Prepared by Mohamed Abdelfattah</footer>
 </div>
 
+<!-- ---------- Report builder modal ---------- -->
+<div id="reportOverlay" class="report-overlay">
+  <div class="report-modal">
+    <div class="report-modal-head">
+      <h3 id="reportStepTitle">Step 1 of 3 — Filter students</h3>
+      <button type="button" class="report-close" id="reportCloseBtn" aria-label="Close">✕</button>
+    </div>
+
+    <div class="report-step" id="reportStep1">
+      <p class="report-step-hint">Pick a value for any column you want to narrow down by. Leave a column on "All" to include every value.</p>
+      <div class="report-filter-grid" id="reportFilterGrid"></div>
+    </div>
+
+    <div class="report-step" id="reportStep2" style="display:none;">
+      <p class="report-step-hint">How should the PDF page be laid out?</p>
+      <div class="report-header-field">
+        <label for="reportHeaderInput">Report header</label>
+        <textarea id="reportHeaderInput" rows="2" placeholder="Enter the report header...">Student Report</textarea>
+      </div>
+      <div class="report-orientation-choice">
+        <button type="button" class="report-orientation-btn active" data-orientation="portrait">
+          <div class="orientation-icon portrait-icon"></div>
+          بالطول (Portrait)
+        </button>
+        <button type="button" class="report-orientation-btn" data-orientation="landscape">
+          <div class="orientation-icon landscape-icon"></div>
+          بالعرض (Landscape)
+        </button>
+      </div>
+    </div>
+
+    <div class="report-step" id="reportStep3" style="display:none;">
+      <p class="report-step-hint">Choose which columns should appear in the report.</p>
+      <div class="report-columns-actions">
+        <button type="button" id="reportColsAll">Select all</button>
+        <button type="button" id="reportColsNone">Clear all</button>
+      </div>
+      <div class="report-columns-grid" id="reportColumnsGrid"></div>
+    </div>
+
+    <div class="report-modal-foot">
+      <div class="report-match-count" id="reportMatchCount"></div>
+      <div class="report-modal-buttons">
+        <button type="button" class="btn-reset-roster" id="reportBackBtn" style="display:none;">Back</button>
+        <button type="button" class="btn-upload" id="reportNextBtn">Next</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Printable report area: hidden on screen, shown only by print CSS -->
+<div id="reportPrintArea"></div>
+
 <div id="toast" class="show">Roster updated — 2,132 students loaded in this browser. Click "Connect file for auto-save" so future uploads save straight to disk.</div>
 
 <script>
@@ -25932,7 +26097,7 @@ function uniqueSorted(arr){
 }
 
 function loadData(rows){
-  DATA = rows;
+  DATA = rows.map(r => ({...r, courses: r.courses ?? ''}));
   populateFilterOptions();
   currentStage = 'All';
   currentDivision = 'All';
@@ -25942,21 +26107,44 @@ function loadData(rows){
   countDrillGrade = null;
   currentPage = 1;
   document.getElementById('fSearch').value = '';
-  ['fGrade','fClass','fGender','fBus','fBusLine','fLang'].forEach(id => document.getElementById(id).value = '');
+  ['fGrade','fClass','fGender','fBus','fBusLine','fCourses','fLang'].forEach(id => document.getElementById(id).value = '');
   render();
 }
 
+function getRowsForFilterOptions(excludeKey){
+  const f = getFilters();
+  return DATA.filter(d=>{
+    if(currentStage !== 'All' && d.stage !== currentStage) return false;
+    if(currentDivision !== 'All' && d.division !== currentDivision) return false;
+    if(excludeKey !== 'grade' && f.grade && d.grade !== f.grade) return false;
+    if(excludeKey !== 'cls' && f.cls && d.cls !== f.cls) return false;
+    if(excludeKey !== 'gender' && f.gender && d.gender !== f.gender) return false;
+    if(excludeKey !== 'bus' && f.bus && d.bus !== f.bus) return false;
+    if(excludeKey !== 'busLine' && f.busLine && d.busLine !== f.busLine) return false;
+    if(excludeKey !== 'courses' && f.courses && d.courses !== f.courses) return false;
+    if(excludeKey !== 'lang2' && f.lang2 && d.lang2 !== f.lang2) return false;
+    return true;
+  });
+}
+
 function populateFilterOptions(){
-  const grades = uniqueSorted(DATA.map(d=>d.grade)).sort(gradeSort);
-  const classes = uniqueSorted(DATA.map(d=>d.cls));
-  const genders = uniqueSorted(DATA.map(d=>d.gender));
-  const busLines = uniqueSorted(DATA.map(d=>d.busLine));
-  const langs = uniqueSorted(DATA.map(d=>d.lang2));
+  // Every dropdown is populated from the currently selected Stage/Division
+  // and all the OTHER active filters. This makes the filters cascading: for
+  // example, choosing Stage KG leaves only Baby class, KG 1 and KG 2 in Grade.
+  const grades = uniqueSorted(getRowsForFilterOptions('grade').map(d=>d.grade)).sort(gradeSort);
+  const classes = uniqueSorted(getRowsForFilterOptions('cls').map(d=>d.cls));
+  const genders = uniqueSorted(getRowsForFilterOptions('gender').map(d=>d.gender));
+  const buses = uniqueSorted(getRowsForFilterOptions('bus').map(d=>d.bus));
+  const busLines = uniqueSorted(getRowsForFilterOptions('busLine').map(d=>d.busLine));
+  const courses = uniqueSorted(getRowsForFilterOptions('courses').map(d=>d.courses));
+  const langs = uniqueSorted(getRowsForFilterOptions('lang2').map(d=>d.lang2));
 
   fillSelect('fGrade', grades, 'All grades');
   fillSelect('fClass', classes, 'All classes');
   fillSelect('fGender', genders, 'All');
+  fillSelect('fBus', buses, 'All');
   fillSelect('fBusLine', busLines, 'All bus lines');
+  fillSelect('fCourses', courses, 'All courses');
   fillSelect('fLang', langs, 'All languages');
 
   // stage tabs
@@ -25973,7 +26161,7 @@ function populateFilterOptions(){
     const btn = document.createElement('button');
     btn.className = 'stage-tab';
     btn.dataset.stage = s;
-    const count = DATA.filter(d=>d.stage===s).length;
+    const count = getRowsForFilterOptions('__stage__').filter(d=>d.stage===s).length;
     btn.innerHTML = `${STAGE_LABELS[s]||s} <span class="count">${count}</span>`;
     btn.addEventListener('click', ()=> setStage(s));
     stageRow.appendChild(btn);
@@ -25993,7 +26181,7 @@ function populateFilterOptions(){
     const btn = document.createElement('button');
     btn.className = 'stage-tab division-tab';
     btn.dataset.division = dv;
-    const count = DATA.filter(d=>d.division===dv).length;
+    const count = getRowsForFilterOptions('__division__').filter(d=>d.division===dv).length;
     btn.innerHTML = `${dv} <span class="count">${count}</span>`;
     btn.addEventListener('click', ()=> setDivision(dv));
     divisionRow.appendChild(btn);
@@ -26041,12 +26229,13 @@ function getFilters(){
     gender: document.getElementById('fGender').value,
     bus: document.getElementById('fBus').value,
     busLine: document.getElementById('fBusLine').value,
+    courses: document.getElementById('fCourses').value,
     lang2: document.getElementById('fLang').value,
   };
 }
 
-// Matches every active filter EXCEPT the stage tab — used by the stage×gender
-// comparison, which is meant to always show all four stages side by side.
+// Matches every active filter, including the selected stage/division, so the
+// same filtered population drives the charts and the student search/table.
 function matchesCommonFilters(d, f){
   if(currentDivision !== 'All' && d.division !== currentDivision) return false;
   if(f.grade && d.grade !== f.grade) return false;
@@ -26056,7 +26245,7 @@ function matchesCommonFilters(d, f){
   if(f.busLine && d.busLine !== f.busLine) return false;
   if(f.lang2 && d.lang2 !== f.lang2) return false;
   if(f.search){
-    const hay = (d.name+' '+d.cls+' '+d.grade).toLowerCase();
+    const hay = (d.name+' '+d.cls+' '+d.grade+' '+d.busLine+' '+d.courses).toLowerCase();
     if(!hay.includes(f.search)) return false;
   }
   return true;
@@ -26071,6 +26260,9 @@ function applyFilters(){
 }
 
 function render(){
+  // Refresh the available filter values first so every filter stays linked to
+  // the current Stage/Division and the other selected filters.
+  populateFilterOptions();
   applyFilters();
   try{ renderStats(); }catch(e){ console.error('stats error', e); }
   try{
@@ -26417,6 +26609,7 @@ function renderTable(){
       <td>${escapeHtml(STAGE_LABELS[d.stage]||d.stage)}</td>
       <td><span class="tag ${d.bus==='Yes'?'yes':'no'}">${escapeHtml(d.bus)}</span></td>
       <td>${escapeHtml(d.busLine)}</td>
+      <td>${escapeHtml(d.courses)}</td>
       <td>${escapeHtml(d.emergencyPhone)}</td>
       <td>${escapeHtml(d.motherPhone)}</td>
       <td>${escapeHtml(d.fatherPhone)}</td>
@@ -26439,13 +26632,13 @@ function renderTable(){
 }
 
 // ---------- events ----------
-['fSearch','fGrade','fClass','fGender','fBus','fBusLine','fLang'].forEach(id=>{
+['fSearch','fGrade','fClass','fGender','fBus','fBusLine','fCourses','fLang'].forEach(id=>{
   const el = document.getElementById(id);
   el.addEventListener(el.tagName==='INPUT' ? 'input' : 'change', ()=>{ currentPage = 1; render(); });
 });
 document.getElementById('resetBtn').addEventListener('click', ()=>{
   document.getElementById('fSearch').value = '';
-  ['fGrade','fClass','fGender','fBus','fBusLine','fLang'].forEach(id => document.getElementById(id).value = '');
+  ['fGrade','fClass','fGender','fBus','fBusLine','fCourses','fLang'].forEach(id => document.getElementById(id).value = '');
   currentStage = 'All';
   currentDivision = 'All';
   currentPage = 1;
@@ -26470,6 +26663,7 @@ const COLUMN_MAP = {
   stage: 'Stage',
   bus: 'مشترك باص',
   busLine: 'خط الباصات',
+  courses: 'الدورات',
   emergencyPhone: 'رقم تليفون للطوارئ',
   motherPhone: 'Update mother phone',
   fatherPhone: 'update Father phone',
@@ -26510,6 +26704,11 @@ function rows2dToRecords(rows2d){
     const wanted = normalizeHeader(COLUMN_MAP[key]);
     if(wanted in idx){
       colIdx[key] = idx[wanted];
+    } else if(key === 'courses'){
+      // Courses is optional so older sheets without this column still load.
+      const aliases = ['courses','course','الدورات','الدورات التدريبية'];
+      const alias = aliases.map(normalizeHeader).find(a => a in idx);
+      colIdx[key] = alias ? idx[alias] : -1;
     } else {
       missing.push(COLUMN_MAP[key]);
     }
@@ -26528,7 +26727,7 @@ function rows2dToRecords(rows2d){
     if(!nameVal) continue;
     const rec = {};
     for(const key in COLUMN_MAP){
-      rec[key] = cleanCell(row[colIdx[key]]);
+      rec[key] = colIdx[key] >= 0 ? cleanCell(row[colIdx[key]]) : '';
     }
     rec.bus = (rec.bus === '1' || rec.bus === '1.0') ? 'Yes' : 'No';
     if(['0','لم يسجل',''].includes(rec.lang2)) rec.lang2 = 'Not Registered';
@@ -26818,6 +27017,258 @@ async function writeUpdatedFile(rows){
 
 document.getElementById('connectFileBtn').addEventListener('click', connectDashboardFile);
 document.getElementById('syncSheetBtn').addEventListener('click', ()=> syncFromGoogleSheet(true));
+
+// ---------- Report builder (filter -> orientation -> columns -> PDF) ----------
+// Columns a person can narrow the report down by. Free-text fields (name,
+// phones, address) aren't offered here since an exact-match dropdown doesn't
+// make sense for them — they're still available as output columns below.
+const REPORT_FILTER_FIELDS = [
+  {key:'stage', label:'Stage'},
+  {key:'division', label:'Division'},
+  {key:'grade', label:'Grade'},
+  {key:'cls', label:'Class'},
+  {key:'gender', label:'Gender'},
+  {key:'lang2', label:'Second language'},
+  {key:'level', label:'Student level'},
+  {key:'bus', label:'Bus'},
+  {key:'busLine', label:'Bus line'},
+  {key:'courses', label:'Courses'},
+];
+
+// Columns a person can choose to show in the printed report, in table order.
+const REPORT_OUTPUT_FIELDS = [
+  {key:'name', label:'Name'},
+  {key:'gender', label:'Gender'},
+  {key:'grade', label:'Grade'},
+  {key:'division', label:'Division'},
+  {key:'cls', label:'Class'},
+  {key:'lang2', label:'2nd language'},
+  {key:'level', label:'Level'},
+  {key:'stage', label:'Stage'},
+  {key:'bus', label:'Bus'},
+  {key:'busLine', label:'Bus line'},
+  {key:'courses', label:'Courses'},
+  {key:'emergencyPhone', label:'Emergency phone'},
+  {key:'motherPhone', label:"Mother's phone"},
+  {key:'fatherPhone', label:"Father's phone"},
+  {key:'address', label:'Address'},
+];
+
+const reportState = {
+  step: 1,
+  filters: {},        // key -> chosen value ('' = All)
+  orientation: 'portrait',
+  header: 'Student Report',
+  columns: new Set(['name','gender','grade','cls','motherPhone','fatherPhone']), // sensible default
+};
+
+function getReportBaseFilters(){
+  const f = {};
+  if(currentStage !== 'All') f.stage = currentStage;
+  if(currentDivision !== 'All') f.division = currentDivision;
+  const dashboardFilters = getFilters();
+  Object.keys(dashboardFilters).forEach(key=>{
+    if(dashboardFilters[key]) f[key] = dashboardFilters[key];
+  });
+  return f;
+}
+
+function reportMatchesFilters(row, filters, skipKey=''){
+  for(const key in filters){
+    if(key === skipKey) continue;
+    const wanted = filters[key];
+    if(wanted && row[key] !== wanted) return false;
+  }
+  return true;
+}
+
+function reportMatchedRows(){
+  const filters = {...getReportBaseFilters(), ...reportState.filters};
+  return DATA.filter(row => reportMatchesFilters(row, filters));
+}
+
+function renderReportFilterGrid(){
+  const grid = document.getElementById('reportFilterGrid');
+  grid.innerHTML = '';
+
+  // Each report filter is populated from the rows that satisfy all the OTHER
+  // selected filters. This makes the report builder cascading: Stage -> Grade
+  // -> Class, and the same relationship works across all filter columns.
+  const baseFilters = getReportBaseFilters();
+  const combinedFilters = {...baseFilters, ...reportState.filters};
+
+  REPORT_FILTER_FIELDS.forEach(f=>{
+    const values = uniqueSorted(DATA
+      .filter(row => reportMatchesFilters(row, combinedFilters, f.key))
+      .map(d => d[f.key])
+      .filter(Boolean));
+
+    const wrap = document.createElement('div');
+    wrap.className = 'report-filter-field';
+    const select = document.createElement('select');
+    select.id = 'rf_' + f.key;
+    select.innerHTML = `<option value="">All ${escapeHtml(f.label.toLowerCase())}</option>` +
+      values.map(v=>`<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
+
+    // Keep a selection only if it is valid under the other active filters.
+    const current = reportState.filters[f.key] || '';
+    if(current && values.includes(current)){
+      select.value = current;
+    } else {
+      if(current) delete reportState.filters[f.key];
+      select.value = '';
+    }
+
+    select.addEventListener('change', ()=>{
+      if(select.value) reportState.filters[f.key] = select.value;
+      else delete reportState.filters[f.key];
+      renderReportFilterGrid();
+    });
+    wrap.innerHTML = `<label for="${select.id}">${escapeHtml(f.label)}</label>`;
+    wrap.appendChild(select);
+    grid.appendChild(wrap);
+  });
+  updateReportMatchCount();
+}
+
+function updateReportMatchCount(){
+  const n = reportMatchedRows().length;
+  const el = document.getElementById('reportMatchCount');
+  if(el) el.textContent = `${n.toLocaleString()} student${n===1?'':'s'} match${n===1?'es':''} so far`;
+}
+
+function renderReportColumnsGrid(){
+  const grid = document.getElementById('reportColumnsGrid');
+  grid.innerHTML = '';
+  REPORT_OUTPUT_FIELDS.forEach(f=>{
+    const id = 'rc_' + f.key;
+    const label = document.createElement('label');
+    label.className = 'report-col-check';
+    label.htmlFor = id;
+    const checked = reportState.columns.has(f.key);
+    label.innerHTML = `<input type="checkbox" id="${id}" ${checked?'checked':''}> ${escapeHtml(f.label)}`;
+    label.querySelector('input').addEventListener('change', (e)=>{
+      if(e.target.checked) reportState.columns.add(f.key);
+      else reportState.columns.delete(f.key);
+    });
+    grid.appendChild(label);
+  });
+}
+
+function setReportStep(step){
+  reportState.step = step;
+  document.getElementById('reportStep1').style.display = step===1 ? '' : 'none';
+  document.getElementById('reportStep2').style.display = step===2 ? '' : 'none';
+  document.getElementById('reportStep3').style.display = step===3 ? '' : 'none';
+  document.getElementById('reportStepTitle').textContent =
+    step===1 ? 'Step 1 of 3 — Filter students' :
+    step===2 ? 'Step 2 of 3 — Page layout' :
+    'Step 3 of 3 — Choose columns';
+  document.getElementById('reportBackBtn').style.display = step===1 ? 'none' : '';
+  document.getElementById('reportNextBtn').textContent = step===3 ? 'Generate PDF' : 'Next';
+  if(step===1) renderReportFilterGrid();
+  if(step===3) renderReportColumnsGrid();
+}
+
+function openReportModal(){
+  reportState.step = 1;
+  // Start the PDF builder with the same active dashboard filters, so the
+  // report and the dashboard always refer to the same student population.
+  reportState.filters = getReportBaseFilters();
+  const headerInput = document.getElementById('reportHeaderInput');
+  if(headerInput) headerInput.value = reportState.header || 'Student Report';
+  document.getElementById('reportOverlay').classList.add('open');
+  setReportStep(1);
+}
+function closeReportModal(){
+  document.getElementById('reportOverlay').classList.remove('open');
+}
+
+document.getElementById('openReportBtn').addEventListener('click', openReportModal);
+document.getElementById('reportCloseBtn').addEventListener('click', closeReportModal);
+document.getElementById('reportOverlay').addEventListener('click', (e)=>{
+  if(e.target.id === 'reportOverlay') closeReportModal();
+});
+
+document.querySelectorAll('.report-orientation-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.report-orientation-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    reportState.orientation = btn.dataset.orientation;
+  });
+});
+
+document.getElementById('reportColsAll').addEventListener('click', ()=>{
+  REPORT_OUTPUT_FIELDS.forEach(f=>reportState.columns.add(f.key));
+  renderReportColumnsGrid();
+});
+document.getElementById('reportColsNone').addEventListener('click', ()=>{
+  reportState.columns.clear();
+  renderReportColumnsGrid();
+});
+
+document.getElementById('reportBackBtn').addEventListener('click', ()=>{
+  if(reportState.step > 1) setReportStep(reportState.step - 1);
+});
+
+document.getElementById('reportHeaderInput').addEventListener('input', (e)=>{
+  reportState.header = e.target.value;
+});
+
+document.getElementById('reportNextBtn').addEventListener('click', ()=>{
+  if(reportState.step < 3){
+    setReportStep(reportState.step + 1);
+  } else {
+    generateReportPdf();
+  }
+});
+
+function generateReportPdf(){
+  const rows = reportMatchedRows();
+  const cols = REPORT_OUTPUT_FIELDS.filter(f => reportState.columns.has(f.key));
+  if(!cols.length){
+    showToast('Pick at least one column to include in the report.', 5000);
+    return;
+  }
+  if(!rows.length){
+    showToast('No students match the filters you chose.', 5000);
+    return;
+  }
+
+  const filterSummary = REPORT_FILTER_FIELDS
+    .filter(f => reportState.filters[f.key])
+    .map(f => `${f.label}: ${reportState.filters[f.key]}`)
+    .join(' · ') || 'All students';
+
+  const theadHtml = '<tr>' + cols.map(c=>`<th>${escapeHtml(c.label)}</th>`).join('') + '</tr>';
+  const bodyHtml = rows.map(r =>
+    '<tr>' + cols.map(c=>`<td>${escapeHtml(r[c.key] ?? '')}</td>`).join('') + '</tr>'
+  ).join('');
+
+  const printArea = document.getElementById('reportPrintArea');
+  const reportHeader = (reportState.header || '').trim() || 'Student Report';
+  printArea.innerHTML = `
+    <div class="report-print-title">${escapeHtml(reportHeader)}</div>
+    <div class="report-print-meta">${escapeHtml(filterSummary)} — ${rows.length.toLocaleString()} student${rows.length===1?'':'s'} — generated ${new Date().toLocaleString()}</div>
+    <table class="report-print-table">
+      <thead>${theadHtml}</thead>
+      <tbody>${bodyHtml}</tbody>
+    </table>
+  `;
+
+  // Set the page orientation for this print job.
+  let pageStyle = document.getElementById('reportPageStyle');
+  if(!pageStyle){
+    pageStyle = document.createElement('style');
+    pageStyle.id = 'reportPageStyle';
+    document.head.appendChild(pageStyle);
+  }
+  pageStyle.textContent = `@page { size: A4 ${reportState.orientation}; margin: 12mm; }`;
+
+  closeReportModal();
+  // Give the browser a tick to lay out the print area before opening the dialog.
+  setTimeout(()=> window.print(), 50);
+}
 
 document.getElementById('uploadBtn').addEventListener('click', ()=> document.getElementById('fileInput').click());
 document.getElementById('fileInput').addEventListener('change', (e)=>{
