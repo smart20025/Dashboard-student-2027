@@ -24897,6 +24897,15 @@ if(typeof window !== 'undefined' && !window.XLSX) try { window.XLSX = XLSX; } ca
   .orientation-icon{ border:2px solid currentColor; border-radius:4px; }
   .portrait-icon{ width:34px; height:46px; }
   .landscape-icon{ width:46px; height:34px; }
+
+  .report-class-checks{border:1px solid var(--line);border-radius:8px;padding:8px;max-height:190px;overflow:auto;background:var(--paper);}
+  .report-class-actions{display:flex;gap:6px;margin-bottom:7px;position:sticky;top:0;background:var(--paper);padding-bottom:5px;}
+  .report-mini-btn{background:none;border:1px solid var(--line);border-radius:6px;padding:4px 8px;font-size:10.5px;cursor:pointer;color:var(--ink-soft);}
+  .report-class-check{display:flex;align-items:center;gap:7px;padding:4px 2px;font-size:12px;cursor:pointer;}
+  .report-sort-field{margin-top:16px;}
+  .report-sort-field>label{display:block;font-size:11.5px;font-weight:700;color:var(--ink-soft);margin-bottom:5px;}
+  .report-sort-row{display:flex;gap:8px;}
+  .report-sort-row select{flex:1;border:1px solid var(--line);background:var(--paper);color:var(--ink);padding:7px 9px;border-radius:8px;font-size:12.5px;}
   .report-columns-actions{ display:flex; gap:10px; margin-bottom:12px; }
   .report-columns-actions button{
     background:none; border:1px solid var(--line); border-radius:7px;
@@ -26026,6 +26035,13 @@ if(typeof window !== 'undefined' && !window.XLSX) try { window.XLSX = XLSX; } ca
           بالعرض (Landscape)
         </button>
       </div>
+      <div class="report-sort-field">
+        <label for="reportSortBy">Sort report rows by</label>
+        <div class="report-sort-row">
+          <select id="reportSortBy"><option value="">Default order</option></select>
+          <select id="reportSortDir"><option value="asc">A → Z / Low → High</option><option value="desc">Z → A / High → Low</option></select>
+        </div>
+      </div>
     </div>
 
     <div class="report-step" id="reportStep3" style="display:none;">
@@ -27056,7 +27072,9 @@ const REPORT_OUTPUT_FIELDS = [
 
 const reportState = {
   step: 1,
-  filters: {},        // key -> chosen value ('' = All)
+  filters: {},        // key -> chosen value; cls is an array for multi-select
+  sortBy: '',
+  sortDir: 'asc',
   orientation: 'portrait',
   header: 'Student Report',
   columns: new Set(['name','gender','grade','cls','motherPhone','fatherPhone']), // sensible default
@@ -27077,23 +27095,27 @@ function reportMatchesFilters(row, filters, skipKey=''){
   for(const key in filters){
     if(key === skipKey) continue;
     const wanted = filters[key];
-    if(wanted && row[key] !== wanted) return false;
+    if(Array.isArray(wanted)){
+      if(wanted.length && !wanted.includes(row[key])) return false;
+    } else if(wanted && row[key] !== wanted) return false;
   }
   return true;
 }
 
 function reportMatchedRows(){
   const filters = {...getReportBaseFilters(), ...reportState.filters};
-  return DATA.filter(row => reportMatchesFilters(row, filters));
+  const rows = DATA.filter(row => reportMatchesFilters(row, filters));
+  if(reportState.sortBy){
+    const key = reportState.sortBy, dir = reportState.sortDir === 'desc' ? -1 : 1;
+    rows.sort((a,b)=>String(a[key] ?? '').localeCompare(String(b[key] ?? ''), undefined, {numeric:true, sensitivity:'base'}) * dir);
+  }
+  return rows;
 }
 
 function renderReportFilterGrid(){
   const grid = document.getElementById('reportFilterGrid');
   grid.innerHTML = '';
 
-  // Each report filter is populated from the rows that satisfy all the OTHER
-  // selected filters. This makes the report builder cascading: Stage -> Grade
-  // -> Class, and the same relationship works across all filter columns.
   const baseFilters = getReportBaseFilters();
   const combinedFilters = {...baseFilters, ...reportState.filters};
 
@@ -27105,32 +27127,63 @@ function renderReportFilterGrid(){
 
     const wrap = document.createElement('div');
     wrap.className = 'report-filter-field';
-    const select = document.createElement('select');
-    select.id = 'rf_' + f.key;
-    select.innerHTML = `<option value="">All ${escapeHtml(f.label.toLowerCase())}</option>` +
-      values.map(v=>`<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
+    const label = document.createElement('label');
+    label.textContent = f.label;
+    wrap.appendChild(label);
 
-    // Keep a selection only if it is valid under the other active filters.
-    const current = reportState.filters[f.key] || '';
-    if(current && values.includes(current)){
-      select.value = current;
+    if(f.key === 'cls'){
+      const current = Array.isArray(reportState.filters.cls) ? reportState.filters.cls : [];
+      const box = document.createElement('div');
+      box.className = 'report-class-checks';
+      const actions = document.createElement('div');
+      actions.className = 'report-class-actions';
+      actions.innerHTML = '<button type="button" class="report-mini-btn">Select all</button><button type="button" class="report-mini-btn">Clear</button>';
+      const selectAll = actions.children[0], clear = actions.children[1];
+      selectAll.onclick = ()=>{
+        reportState.filters.cls = [...values];
+        renderReportFilterGrid();
+      };
+      clear.onclick = ()=>{
+        delete reportState.filters.cls;
+        renderReportFilterGrid();
+      };
+      box.appendChild(actions);
+      values.forEach(v=>{
+        const item = document.createElement('label');
+        item.className = 'report-class-check';
+        const cb = document.createElement('input');
+        cb.type = 'checkbox'; cb.value = v; cb.checked = current.includes(v);
+        cb.addEventListener('change', ()=>{
+          const selected = Array.isArray(reportState.filters.cls) ? [...reportState.filters.cls] : [];
+          if(cb.checked && !selected.includes(v)) selected.push(v);
+          if(!cb.checked) selected.splice(selected.indexOf(v), 1);
+          if(selected.length) reportState.filters.cls = selected;
+          else delete reportState.filters.cls;
+          renderReportFilterGrid();
+        });
+        item.append(cb, document.createTextNode(v));
+        box.appendChild(item);
+      });
+      wrap.appendChild(box);
     } else {
-      if(current) delete reportState.filters[f.key];
-      select.value = '';
+      const select = document.createElement('select');
+      select.id = 'rf_' + f.key;
+      select.innerHTML = `<option value="">All ${escapeHtml(f.label.toLowerCase())}</option>` +
+        values.map(v=>`<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
+      const current = reportState.filters[f.key] || '';
+      if(current && values.includes(current)) select.value = current;
+      else { if(current) delete reportState.filters[f.key]; select.value = ''; }
+      select.addEventListener('change', ()=>{
+        if(select.value) reportState.filters[f.key] = select.value;
+        else delete reportState.filters[f.key];
+        renderReportFilterGrid();
+      });
+      wrap.appendChild(select);
     }
-
-    select.addEventListener('change', ()=>{
-      if(select.value) reportState.filters[f.key] = select.value;
-      else delete reportState.filters[f.key];
-      renderReportFilterGrid();
-    });
-    wrap.innerHTML = `<label for="${select.id}">${escapeHtml(f.label)}</label>`;
-    wrap.appendChild(select);
     grid.appendChild(wrap);
   });
   updateReportMatchCount();
 }
-
 function updateReportMatchCount(){
   const n = reportMatchedRows().length;
   const el = document.getElementById('reportMatchCount');
@@ -27177,6 +27230,17 @@ function openReportModal(){
   reportState.filters = getReportBaseFilters();
   const headerInput = document.getElementById('reportHeaderInput');
   if(headerInput) headerInput.value = reportState.header || 'Student Report';
+  const sortBy = document.getElementById('reportSortBy');
+  const sortDir = document.getElementById('reportSortDir');
+  if(sortBy){
+    sortBy.innerHTML = '<option value="">Default order</option>' + REPORT_OUTPUT_FIELDS.map(f=>`<option value="${escapeHtml(f.key)}">${escapeHtml(f.label)}</option>`).join('');
+    sortBy.value = reportState.sortBy || '';
+    sortBy.onchange = ()=>{ reportState.sortBy = sortBy.value; updateReportMatchCount(); };
+  }
+  if(sortDir){
+    sortDir.value = reportState.sortDir || 'asc';
+    sortDir.onchange = ()=>{ reportState.sortDir = sortDir.value; updateReportMatchCount(); };
+  }
   document.getElementById('reportOverlay').classList.add('open');
   setReportStep(1);
 }
