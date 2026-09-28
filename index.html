@@ -25251,7 +25251,7 @@ if(typeof window !== 'undefined' && !window.XLSX) try { window.XLSX = XLSX; } ca
   <div class="filter-panel">
     <div class="field search">
       <label for="fSearch">Search</label>
-      <input type="text" id="fSearch" placeholder="Student name or class...">
+      <input type="text" id="fSearch" placeholder="اسم الطالب، الفصل، رقم التليفون أو رقم الباص...">
     </div>
     <div class="field">
       <label for="fGrade">Grade</label>
@@ -25275,7 +25275,6 @@ if(typeof window !== 'undefined' && !window.XLSX) try { window.XLSX = XLSX; } ca
     <div class="field">
       <label for="fCourses">Courses</label>
       <select id="fCourses"><option value="">All courses</option></select>
-    </div>
     </div>
     <div class="field">
       <label for="fLang">Second language</label>
@@ -26127,6 +26126,56 @@ function loadData(rows){
   render();
 }
 
+// ---------- بحث بالتليفون / رقم الباص + فلتر الدورات ----------
+// تحويل الأرقام العربية (٠-٩ و ۰-۹) لأرقام إنجليزية
+function toWesternDigits(s){
+  return String(s ?? '')
+    .replace(/[٠-٩]/g, c => String(c.charCodeAt(0) - 0x0660))
+    .replace(/[۰-۹]/g, c => String(c.charCodeAt(0) - 0x06F0));
+}
+// توحيد رقم التليفون: أرقام فقط، بدون كود مصر (+20 / 0020) وبدون الصفر الأول
+// فتتساوى الصيغ: +201090204371 = 01090204371 = 1090204371
+function normPhone(v){
+  let s = toWesternDigits(v).replace(/\D/g, '');
+  if(s.startsWith('0020')) s = s.slice(4);
+  else if(s.startsWith('20') && s.length >= 12) s = s.slice(2);
+  return s.replace(/^0+/, '');
+}
+// تقسيم خانة الدورات لو الطالب مسجل في أكتر من دورة (فاصلة، ؛ ، + ، / ، سطر جديد)
+function splitCourses(v){
+  return String(v ?? '').split(/[,،;؛+\/\n|]+/).map(x => x.trim()).filter(Boolean);
+}
+// اسم العرض في القائمة: لو الشيت فيه 1 أو 2 بس، نكتبها بشكل مفهوم
+const COURSE_LABELS = {'1':'الدورة الأولى', '2':'الدورة الثانية'};
+function courseLabel(v){ return COURSE_LABELS[v] || v; }
+// هل الطالب مسجل في الدورة المختارة؟
+function hasCourse(d, wanted){
+  if(!wanted) return true;
+  return splitCourses(d.courses).includes(wanted);
+}
+// دالة البحث الرئيسية
+//  - لو اللي اتكتب أرقام بس: رقم قصير = رقم الباص بالضبط، و3 أرقام أو أكتر = تليفون (بأي صيغة)
+//  - غير كده: بحث نصي عادي (اسم / فصل / مرحلة / باص / دورات)
+function matchesSearch(d, search){
+  const west = toWesternDigits(String(search || '').trim());
+  if(!west) return true;
+  const digits = west.replace(/\D/g, '');
+  const isNumeric = digits.length > 0 && /^[\d\s+\-()]+$/.test(west);
+  if(isNumeric){
+    const busNo = digits.replace(/^0+/, '');
+    if(busNo && String(d.busLine).trim() === busNo) return true;      // رقم الباص بالضبط
+    if(digits.length >= 3){
+      const q = normPhone(digits);
+      if(q.length >= 3){
+        return [d.emergencyPhone, d.motherPhone, d.fatherPhone].some(p => normPhone(p).includes(q));
+      }
+    }
+    return false;
+  }
+  const hay = (d.name+' '+d.cls+' '+d.grade+' '+d.busLine+' '+d.courses).toLowerCase();
+  return hay.includes(west.toLowerCase());
+}
+
 function getRowsForFilterOptions(excludeKey){
   const f = getFilters();
   return DATA.filter(d=>{
@@ -26137,7 +26186,7 @@ function getRowsForFilterOptions(excludeKey){
     if(excludeKey !== 'gender' && f.gender && d.gender !== f.gender) return false;
     if(excludeKey !== 'bus' && f.bus && d.bus !== f.bus) return false;
     if(excludeKey !== 'busLine' && f.busLine && d.busLine !== f.busLine) return false;
-    if(excludeKey !== 'courses' && f.courses && d.courses !== f.courses) return false;
+    if(excludeKey !== 'courses' && f.courses && !hasCourse(d, f.courses)) return false;
     if(excludeKey !== 'lang2' && f.lang2 && d.lang2 !== f.lang2) return false;
     return true;
   });
@@ -26152,7 +26201,7 @@ function populateFilterOptions(){
   const genders = uniqueSorted(getRowsForFilterOptions('gender').map(d=>d.gender));
   const buses = uniqueSorted(getRowsForFilterOptions('bus').map(d=>d.bus));
   const busLines = uniqueSorted(getRowsForFilterOptions('busLine').map(d=>d.busLine));
-  const courses = uniqueSorted(getRowsForFilterOptions('courses').map(d=>d.courses));
+  const courses = uniqueSorted(getRowsForFilterOptions('courses').flatMap(d=>splitCourses(d.courses)));
   const langs = uniqueSorted(getRowsForFilterOptions('lang2').map(d=>d.lang2));
 
   fillSelect('fGrade', grades, 'All grades');
@@ -26160,7 +26209,7 @@ function populateFilterOptions(){
   fillSelect('fGender', genders, 'All');
   fillSelect('fBus', buses, 'All');
   fillSelect('fBusLine', busLines, 'All bus lines');
-  fillSelect('fCourses', courses, 'All courses');
+  fillSelect('fCourses', courses, 'All courses', courseLabel);
   fillSelect('fLang', langs, 'All languages');
 
   // stage tabs
@@ -26204,10 +26253,10 @@ function populateFilterOptions(){
   });
 }
 
-function fillSelect(id, values, placeholder){
+function fillSelect(id, values, placeholder, labelFn){
   const sel = document.getElementById(id);
   const current = sel.value;
-  sel.innerHTML = `<option value="">${placeholder}</option>` + values.map(v=>`<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
+  sel.innerHTML = `<option value="">${placeholder}</option>` + values.map(v=>`<option value="${escapeHtml(v)}">${escapeHtml(labelFn ? labelFn(v) : v)}</option>`).join('');
   if(values.includes(current)) sel.value = current;
 }
 
@@ -26260,10 +26309,8 @@ function matchesCommonFilters(d, f){
   if(f.bus && d.bus !== f.bus) return false;
   if(f.busLine && d.busLine !== f.busLine) return false;
   if(f.lang2 && d.lang2 !== f.lang2) return false;
-  if(f.search){
-    const hay = (d.name+' '+d.cls+' '+d.grade+' '+d.busLine+' '+d.courses).toLowerCase();
-    if(!hay.includes(f.search)) return false;
-  }
+  if(f.courses && !hasCourse(d, f.courses)) return false;   // فلتر الدورات (كان ناقص)
+  if(f.search && !matchesSearch(d, f.search)) return false;
   return true;
 }
 
@@ -27095,6 +27142,9 @@ function reportMatchesFilters(row, filters, skipKey=''){
   for(const key in filters){
     if(key === skipKey) continue;
     const wanted = filters[key];
+    // مفتاح البحث والدورات ليهم منطق خاص (مش مساواة مباشرة)
+    if(key === 'search'){ if(wanted && !matchesSearch(row, wanted)) return false; continue; }
+    if(key === 'courses'){ if(wanted && !hasCourse(row, wanted)) return false; continue; }
     if(Array.isArray(wanted)){
       if(wanted.length && !wanted.includes(row[key])) return false;
     } else if(wanted && row[key] !== wanted) return false;
@@ -27122,7 +27172,7 @@ function renderReportFilterGrid(){
   REPORT_FILTER_FIELDS.forEach(f=>{
     const values = uniqueSorted(DATA
       .filter(row => reportMatchesFilters(row, combinedFilters, f.key))
-      .map(d => d[f.key])
+      .flatMap(d => f.key === 'courses' ? splitCourses(d.courses) : [d[f.key]])
       .filter(Boolean));
 
     const wrap = document.createElement('div');
@@ -27169,7 +27219,7 @@ function renderReportFilterGrid(){
       const select = document.createElement('select');
       select.id = 'rf_' + f.key;
       select.innerHTML = `<option value="">All ${escapeHtml(f.label.toLowerCase())}</option>` +
-        values.map(v=>`<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
+        values.map(v=>`<option value="${escapeHtml(v)}">${escapeHtml(f.key==='courses' ? courseLabel(v) : v)}</option>`).join('');
       const current = reportState.filters[f.key] || '';
       if(current && values.includes(current)) select.value = current;
       else { if(current) delete reportState.filters[f.key]; select.value = ''; }
