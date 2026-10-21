@@ -25251,7 +25251,7 @@ if(typeof window !== 'undefined' && !window.XLSX) try { window.XLSX = XLSX; } ca
   <div class="filter-panel">
     <div class="field search">
       <label for="fSearch">Search</label>
-      <input type="text" id="fSearch" placeholder="اسم الطالب، الفصل، رقم التليفون أو رقم الباص...">
+      <input type="text" id="fSearch" placeholder="اسم الطالب، الفصل، التليفون، الباص، Classera أو Admission...">
     </div>
     <div class="field">
       <label for="fGrade">Grade</label>
@@ -25303,6 +25303,8 @@ if(typeof window !== 'undefined' && !window.XLSX) try { window.XLSX = XLSX; } ca
             <th>Mother's phone</th>
             <th>Father's phone</th>
             <th>Address</th>
+            <th>Classera</th>
+            <th>Admission</th>
           </tr>
         </thead>
         <tbody id="tableBody">
@@ -26112,7 +26114,7 @@ function uniqueSorted(arr){
 }
 
 function loadData(rows){
-  DATA = rows.map(r => ({...r, courses: r.courses ?? ''}));
+  DATA = rows.map(r => ({...r, courses: r.courses ?? '', classera: r.classera ?? '', admission: r.admission ?? ''}));
   populateFilterOptions();
   currentStage = 'All';
   currentDivision = 'All';
@@ -26161,18 +26163,29 @@ function matchesSearch(d, search){
   if(!west) return true;
   const digits = west.replace(/\D/g, '');
   const isNumeric = digits.length > 0 && /^[\d\s+\-()]+$/.test(west);
+
+  // قيم Classera و Admission بعد توحيد الأرقام وتحويلها لحروف صغيرة
+  const ids = [d.classera, d.admission].map(v => toWesternDigits(v).trim().toLowerCase());
+
   if(isNumeric){
     const busNo = digits.replace(/^0+/, '');
-    if(busNo && String(d.busLine).trim() === busNo) return true;      // رقم الباص بالضبط
+    if(busNo && String(d.busLine).trim() === busNo) return true;   // رقم الباص بالضبط
     if(digits.length >= 3){
+      // 3 أرقام أو أكتر: ممكن يكون Classera / Admission (جزء من الرقم كفاية)
+      if(ids.some(v => v.includes(digits))) return true;
+      // أو رقم تليفون بأي صيغة
       const q = normPhone(digits);
       if(q.length >= 3){
         return [d.emergencyPhone, d.motherPhone, d.fatherPhone].some(p => normPhone(p).includes(q));
       }
+      return false;
     }
-    return false;
+    // رقم قصير (1-2 رقم): Classera/Admission بالضبط (عشان ميجيبش نتايج كتير)
+    return ids.some(v => v === digits);
   }
-  const hay = (d.name+' '+d.cls+' '+d.grade+' '+d.busLine+' '+d.courses).toLowerCase();
+
+  // بحث نصي عادي: اسم / فصل / مرحلة / باص / دورات / Classera / Admission
+  const hay = (d.name+' '+d.cls+' '+d.grade+' '+d.busLine+' '+d.courses+' '+d.classera+' '+d.admission).toLowerCase();
   return hay.includes(west.toLowerCase());
 }
 
@@ -26677,6 +26690,8 @@ function renderTable(){
       <td>${escapeHtml(d.motherPhone)}</td>
       <td>${escapeHtml(d.fatherPhone)}</td>
       <td>${escapeHtml(d.address)}</td>
+      <td>${escapeHtml(d.classera)}</td>
+      <td>${escapeHtml(d.admission)}</td>
     </tr>
   `).join('');
 
@@ -26727,6 +26742,8 @@ const COLUMN_MAP = {
   bus: 'مشترك باص',
   busLine: 'خط الباصات',
   courses: 'الدورات',
+  classera: 'Classera',     // رقم/يوزر كلاسيرا
+  admission: 'Admission',   // رقم القبول
   emergencyPhone: 'رقم تليفون للطوارئ',
   motherPhone: 'Update mother phone',
   fatherPhone: 'update Father phone',
@@ -26748,6 +26765,12 @@ function cleanCell(v){
 }
 
 // ---------- shared: turn a 2D array of rows (header row + data rows) into student records ----------
+// أسماء بديلة للأعمدة الاختيارية (بتقبل أكتر من كتابة لنفس العمود)
+const OPTIONAL_ALIASES = {
+  courses:   ['courses','course','الدورات','الدورات التدريبية'],
+  classera:  ['classera','klasera','classera id','classera username','كلاسيرا','كلاسيرة'],
+  admission: ['admission','admision','amision','admission no','admission number','admission id','رقم القبول','رقم الالتحاق'],
+};
 function rows2dToRecords(rows2d){
   if(!rows2d.length) throw new Error('Empty sheet');
   const headers = rows2d[0].map(h => String(h));
@@ -26767,10 +26790,9 @@ function rows2dToRecords(rows2d){
     const wanted = normalizeHeader(COLUMN_MAP[key]);
     if(wanted in idx){
       colIdx[key] = idx[wanted];
-    } else if(key === 'courses'){
-      // Courses is optional so older sheets without this column still load.
-      const aliases = ['courses','course','الدورات','الدورات التدريبية'];
-      const alias = aliases.map(normalizeHeader).find(a => a in idx);
+    } else if(key in OPTIONAL_ALIASES){
+      // أعمدة اختيارية: لو مش موجودة في الشيت القديم الملف يتفتح عادي
+      const alias = OPTIONAL_ALIASES[key].map(normalizeHeader).find(a => a in idx);
       colIdx[key] = alias ? idx[alias] : -1;
     } else {
       missing.push(COLUMN_MAP[key]);
@@ -27115,6 +27137,8 @@ const REPORT_OUTPUT_FIELDS = [
   {key:'motherPhone', label:"Mother's phone"},
   {key:'fatherPhone', label:"Father's phone"},
   {key:'address', label:'Address'},
+  {key:'classera', label:'Classera'},
+  {key:'admission', label:'Admission'},
 ];
 
 const reportState = {
