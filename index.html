@@ -141,6 +141,8 @@ button{cursor:pointer}
 .hero-sub{margin:0;max-width:640px;font-size:15px;color:rgba(255,255,255,.82);min-height:24px}
 .hero-controls{display:flex;flex-wrap:wrap;gap:18px 30px;margin-top:28px}
 .ctrl{display:flex;flex-direction:column;gap:8px;min-width:0;max-width:100%}
+.ctrl.grades{flex-basis:100%;display:none}
+.ctrl.grades.show{display:flex;animation:pop .55s var(--ease)}
 .ctrl>.lbl{font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.65)}
 .seg{position:relative;display:inline-flex;gap:2px;padding:4px;border-radius:15px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(8px);overflow-x:auto;scrollbar-width:none;max-width:100%}
 .seg::-webkit-scrollbar{display:none}
@@ -151,6 +153,11 @@ button{cursor:pointer}
 .seg button .count{font-size:11px;font-weight:700;padding:1px 8px;border-radius:99px;background:rgba(255,255,255,.16);transition:background .3s,color .3s}
 .seg button.active .count{background:#00517c1a;color:#00517c}
 
+.ctrl.wide{flex:1 1 100%}
+.ctl{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.mode-toggle{display:inline-flex;padding:3px;border-radius:10px;background:var(--surface-3);border:1px solid var(--line)}
+.mode-toggle button{border:0;background:transparent;padding:6px 12px;border-radius:8px;font-size:12px;font-weight:700;color:var(--ink-2);transition:all .3s var(--ease)}
+.mode-toggle button.active{background:var(--surface);color:var(--brand-2);box-shadow:0 2px 8px rgba(0,0,0,.14)}
 /* ---------- KPIs ---------- */
 .kpis{position:relative;z-index:2;margin-top:-62px;padding:0 22px;display:grid;grid-template-columns:1.25fr repeat(4,1fr);gap:16px}
 .kpi{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:20px 22px;box-shadow:var(--shadow-1);overflow:hidden;transition:transform .35s var(--ease),box-shadow .35s,border-color .35s}
@@ -204,6 +211,7 @@ input[type=text],select,textarea{width:100%;height:42px;padding:0 14px;border-ra
 textarea{height:auto;padding:10px 14px;resize:vertical}
 select{appearance:none;-webkit-appearance:none;background-image:var(--arrow);background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;cursor:pointer;text-overflow:ellipsis}
 input[type=text]:focus,select:focus,textarea:focus{border-color:var(--brand-2);box-shadow:0 0 0 4px rgba(11,134,196,.16);background:var(--surface)}
+select.grade-select:disabled{opacity:.65;cursor:not-allowed}
 select.grade-select{height:36px;font-size:12.5px;font-weight:600;min-width:170px;border-radius:10px}
 .search-box{position:relative}
 .search-box svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--ink-3);pointer-events:none}
@@ -435,6 +443,7 @@ table.t{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
     <div class="hero-controls">
       <div class="ctrl"><span class="lbl">Stage</span><div class="seg" id="stageRow"><span class="ind"></span></div></div>
       <div class="ctrl"><span class="lbl">Division</span><div class="seg" id="divisionRow"><span class="ind"></span></div></div>
+      <div class="ctrl grades" id="gradeCtrl"><span class="lbl">Grade</span><div class="seg" id="gradeRow"><span class="ind"></span></div></div>
     </div>
   </section>
 
@@ -1012,6 +1021,7 @@ function placeIndicators(){
     if(!ind || !act) return;
     ind.style.width = act.offsetWidth + 'px';
     ind.style.transform = `translateX(${act.offsetLeft}px)`;
+    if(seg.scrollWidth > seg.clientWidth) seg.scrollTo({left: Math.max(0, act.offsetLeft - 40), behavior: REDUCE ? 'auto' : 'smooth'});
   });
 }
 function updateSegs(f){
@@ -1030,6 +1040,19 @@ function updateSegs(f){
     {value:'All', label:'All divisions', count:divRows.length, active:currentDivision==='All'},
     ...divs.map(v => ({value:v, label:v, count:divCounts[v]||0, active:currentDivision===v}))
   ], setDivision);
+  // صف المراحل الدراسية (Grade): بيظهر لما تختار Stage، وبيفلتر كل الشارتات تحت
+  const gctrl = $('gradeCtrl');
+  const showGrades = currentStage !== 'All';
+  gctrl.classList.toggle('show', showGrades);
+  if(showGrades){
+    const gRows = DATA.filter(d => pass(d, f, 'grade', false));
+    const gCounts = {}; gRows.forEach(d => gCounts[d.grade] = (gCounts[d.grade]||0)+1);
+    const gs = Object.keys(gCounts).sort(gradeSort);
+    buildSeg('gradeRow','grade', [
+      {value:'', label:'All grades', count:gRows.length, active:!f.grade},
+      ...gs.map(g => ({value:g, label:g, count:gCounts[g], active:f.grade===g}))
+    ], (g)=>{ $('fGrade').value = g; resetDrills(); currentPage = 1; render(); });
+  }
   requestAnimationFrame(placeIndicators);
 }
 function resetDrills(){ Object.keys(drill).forEach(k => drill[k] = null); }
@@ -1124,9 +1147,36 @@ const valueLabels = {
       const meta = chart.getDatasetMeta(i); if(meta.hidden) return;
       meta.data.forEach((bar, j) => {
         const v = ds.data[j]; if(!v || bar.width < 13) return;
-        ctx.save(); ctx.fillStyle = T.ink; ctx.font = '700 10.5px Inter, sans-serif';
+        ctx.save(); ctx.globalAlpha = Math.max(0, Math.min(1, ((chart.$prog ?? 1) - 0.55) / 0.45)); ctx.fillStyle = T.ink; ctx.font = '700 10.5px Inter, sans-serif';
         ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.fillText(v, bar.x, bar.y - 4); ctx.restore();
       });
+    });
+  }
+};
+const barShadow = {
+  id:'barShadow',
+  beforeDatasetDraw(chart){ if(chart.config.type!=='bar') return; const c=chart.ctx; c.save(); c.shadowColor='rgba(0,20,40,.22)'; c.shadowBlur=12; c.shadowOffsetY=5; },
+  afterDatasetDraw(chart){ if(chart.config.type!=='bar') return; chart.ctx.restore(); }
+};
+const barGlow = {
+  id:'barGlow',
+  beforeDatasetDraw(chart, args){
+    if(chart.config.type !== 'bar') return;
+    const c = chart.data.datasets[args.index].hoverBackgroundColor || '#0b86c4';
+    chart.ctx.save(); chart.ctx.shadowColor = c + '55'; chart.ctx.shadowBlur = 12; chart.ctx.shadowOffsetY = 4;
+  },
+  afterDatasetDraw(chart){ if(chart.config.type === 'bar') chart.ctx.restore(); }
+};
+const pctLabels = {
+  id:'pctLabels',
+  afterDatasetsDraw(chart){
+    if(chart.config.type !== 'doughnut') return;
+    const ds = chart.data.datasets[0]; const total = ds.data.reduce((a,b)=>a+b,0); if(!total) return;
+    chart.getDatasetMeta(0).data.forEach((arc, i) => {
+      const p = ds.data[i] / total * 100; if(p < 6) return;
+      const c = arc.getCenterPoint(); const ctx = chart.ctx;
+      ctx.save(); ctx.fillStyle = '#fff'; ctx.font = '800 13px Manrope, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(Math.round(p) + '%', c.x, c.y); ctx.restore();
     });
   }
 };
@@ -1144,11 +1194,13 @@ const centerText = {
 function barOptions(legend){
   return {
     responsive:true, maintainAspectRatio:false, layout:{padding:{top:22}},
-    animation:{duration:REDUCE?0:800, easing:'easeOutQuart'},
+    animation:{duration:REDUCE?0:900, easing:'easeOutQuart',
+      delay:(c)=> (!REDUCE && c.type==='data' && c.mode==='default') ? c.dataIndex*40 + c.datasetIndex*110 : 0,
+      onProgress:(a)=>{ a.chart.$prog = a.currentStep / a.numSteps; }, onComplete:(a)=>{ a.chart.$prog = 1; }},
     interaction:{mode:'index', intersect:false},
     plugins:{
       legend:{display:legend, position:'bottom', labels:{usePointStyle:true, pointStyle:'circle', boxWidth:8, padding:16, font:{family:'Inter', size:12, weight:'600'}, color:T.ink2}},
-      tooltip:{backgroundColor:'#0b2232', titleColor:'#fff', bodyColor:'#dbe9f3', padding:12, cornerRadius:12, boxPadding:6, usePointStyle:true, titleFont:{family:'Manrope', weight:'800', size:13}, bodyFont:{family:'Inter', size:12.5}}
+      tooltip:{backgroundColor:'#0b2232', titleColor:'#fff', bodyColor:'#dbe9f3', padding:12, cornerRadius:12, boxPadding:6, usePointStyle:true, callbacks:{label:(it)=>{ const ch=it.chart; const tot=ch.data.datasets.length>1 ? ch.data.datasets.reduce((s,d)=>s+(d.data[it.dataIndex]||0),0) : ch.data.datasets[0].data.reduce((s,v)=>s+v,0); const v=it.parsed.y; return ` ${it.dataset.label}: ${fmt(v)}  (${tot?Math.round(v/tot*100):0}%)`; }}, titleFont:{family:'Manrope', weight:'800', size:13}, bodyFont:{family:'Inter', size:12.5}}
     },
     scales:{
       x:{grid:{display:false}, border:{display:false}, ticks:{font:{family:'Inter', size:11.5}, color:T.ink2, maxRotation:50}},
@@ -1156,49 +1208,62 @@ function barOptions(legend){
     }
   };
 }
-function upsertChart(key, canvasId, type, data, optsFn){
+function upsertChart(key, canvasId, type, data, optsFn, stk){
   if(typeof Chart === 'undefined') return;
   const empty = !data.labels.length;
   const holder = $(canvasId).parentElement.querySelector('.chart-empty');
   if(holder) holder.style.display = empty ? 'grid' : 'none';
   const ex = charts[key];
-  if(ex){ ex.data.labels = data.labels; ex.data.datasets = data.datasets; ex.update(); return; }
-  charts[key] = new Chart($(canvasId), {type, data, options:optsFn(), plugins:[valueLabels, centerText]});
+  const setStack = (ch)=>{ if(ch.options.scales && ch.options.scales.x){ ch.options.scales.x.stacked = !!stk; ch.options.scales.y.stacked = !!stk; } };
+  if(ex){ ex.data.labels = data.labels; ex.data.datasets = data.datasets; setStack(ex); ex.update(); return; }
+  const opts = optsFn();
+  // ضغطة على عمود المرحلة تفتح فصولها، وضغطة على جزء من الدونات تفلتر بالقسم
+  opts.onClick = (evt, els, chart)=>{
+    if(!els.length) return; const i = els[0].index; const label = chart.data.labels[i];
+    if(type === 'doughnut'){ setDivision(currentDivision === label ? 'All' : label); }
+    else if(chart.$mode === 'grade'){ setGradeFilter(label); }
+  };
+  opts.onHover = (evt, els, chart)=>{ const c = chart.canvas; c.style.cursor = els.length && (type==='doughnut' || chart.$mode==='grade') ? 'pointer' : 'default'; };
+  const ch = new Chart($(canvasId), {type, data, options:opts, plugins:[valueLabels, centerText, barShadow]});
+  setStack(ch); charts[key] = ch;
 }
-function renderGradeDropdown(containerId, rows, avail, current, onSelect){
+function renderGradeDropdown(containerId, rows, avail, current, onSelect, locked){
   const holder = $(containerId); if(!holder) return;
   const counts = {}; rows.forEach(d => counts[d.grade] = (counts[d.grade]||0)+1);
-  const sig = avail.map(g => g+':'+counts[g]).join('|') + '#' + rows.length + '#' + (current||'');
+  const sig = avail.map(g => g+':'+counts[g]).join('|') + '#' + rows.length + '#' + (current||'') + (locked?'L':'');
   if(holder.dataset.sig === sig) return;
   holder.dataset.sig = sig;
   const select = document.createElement('select'); select.className = 'grade-select'; select.setAttribute('aria-label','Grade');
   select.innerHTML = `<option value="">All grades (${fmt(rows.length)})</option>` +
     avail.map(g => `<option value="${escapeHtml(g)}">${escapeHtml(g)} (${fmt(counts[g]||0)})</option>`).join('');
   select.value = current && avail.includes(current) ? current : '';
+  select.disabled = !!locked; if(locked) select.title = 'Grade is set from the filter above';
   select.addEventListener('change', ()=> onSelect(select.value || null));
   holder.innerHTML = ''; holder.appendChild(select);
 }
 const naturalSort = (a,b) => COLLATOR.compare(a,b);
 const stageScopeLabel = () => currentStage === 'All' ? 'all stages' : (STAGE_LABELS[currentStage]||currentStage)+' stage';
 
-// شارت عام: بيعمل مقارنة بالمرحلة، ولو اخترت مرحلة بيتحول لمقارنة بالفصول (New_class)
+// شارت عام: المرحلة (Grade) فلتر واحد مشترك — اختيارها من فوق أو من القائمة أو بالضغط على عمود بيحدّث كل حاجة
+const stacked = {lang:false, gender:false, level:false};
+function setGradeFilter(g){ $('fGrade').value = g || ''; currentPage = 1; render(); }
 function gradeChart(o){
-  const gradesSet = new Set(filtered.map(d=>d.grade));
+  const f = getFilters();
+  const scopeRows = DATA.filter(d => pass(d, f, 'grade', true));   // كل المراحل المتاحة بدون فلتر المرحلة نفسه
+  const gradesSet = new Set(scopeRows.map(d=>d.grade));
   const avail = GRADE_ORDER.filter(g => gradesSet.has(g));
-  if(drill[o.key] && !avail.includes(drill[o.key])) drill[o.key] = null;
-  const dg = drill[o.key];
-  renderGradeDropdown(o.select, filtered, avail, dg, g => { drill[o.key] = g; gradeChart(o); });
+  const dg = f.grade && avail.includes(f.grade) ? f.grade : null;
+  renderGradeDropdown(o.select, scopeRows, avail, dg, setGradeFilter);
 
-  const scope = dg ? filtered.filter(d => d.grade === dg) : filtered;
-  const rows = o.rowFilter ? scope.filter(o.rowFilter) : scope;
+  const rows = o.rowFilter ? filtered.filter(o.rowFilter) : filtered;
   const labels = dg ? uniqueSorted(rows.map(r=>r.cls)).sort(naturalSort) : avail;
   const groupKey = dg ? 'cls' : 'grade';
   const note = $(o.note);
   if(note) note.textContent = dg
-    ? `${dg} — ${fmt(scope.length)} student${scope.length===1?'':'s'} — comparing classes`
+    ? `${dg} — ${fmt(filtered.length)} student${filtered.length===1?'':'s'} — comparing classes`
     : o.noteAll(stageScopeLabel());
 
-  const series = o.series(rows);                  // [{id,label,color}]
+  const series = o.series(rows);
   const idx = {}; labels.forEach((l,i) => idx[l] = i);
   const counts = series.map(() => new Array(labels.length).fill(0));
   const sidx = {}; series.forEach((s,i) => sidx[s.id] = i);
@@ -1206,12 +1271,15 @@ function gradeChart(o){
     const li = idx[r[groupKey]]; const si = sidx[o.seriesOf(r)];
     if(li !== undefined && si !== undefined) counts[si][li]++;
   }
+  const stk = !!stacked[o.key] && series.length > 1;
   const datasets = series.map((s,i) => ({
     label:s.label, data:counts[i],
     backgroundColor:(ctx)=> gradientFor(ctx, s.color), hoverBackgroundColor:s.color,
-    borderRadius:7, borderSkipped:false, maxBarThickness: dg ? 34 : 26, categoryPercentage:.82, barPercentage:.92
+    borderRadius: stk ? 6 : 8, borderSkipped:false,
+    maxBarThickness: stk ? 46 : (dg ? 36 : 28), categoryPercentage:.84, barPercentage: stk ? .78 : .92
   }));
-  upsertChart(o.key, o.canvas, 'bar', {labels, datasets}, ()=> barOptions(o.legend !== false));
+  upsertChart(o.key, o.canvas, 'bar', {labels, datasets}, ()=> barOptions(o.legend !== false), stk);
+  if(charts[o.key]) charts[o.key].$mode = dg ? 'class' : 'grade';
 }
 const levelSeries = (rows) => {
   const lv = uniqueSorted(rows.map(r=>r.level)).sort((a,b)=> (LEVEL_RANK[String(a).toLowerCase()]??99) - (LEVEL_RANK[String(b).toLowerCase()]??99));
@@ -1605,11 +1673,27 @@ function initReveal(){
   els.forEach(e => io.observe(e));
 }
 
+/* ---------------- Grouped / Stacked toggles ---------------- */
+function initToggles(){
+  [['lang','langGradePills'],['gender','genderGradePills'],['level','stageComparePills']].forEach(([key, holderId])=>{
+    const holder = $(holderId); const wrap = document.createElement('div'); wrap.className = 'ctl';
+    const tg = document.createElement('div'); tg.className = 'mode-toggle';
+    tg.innerHTML = '<button type="button" data-m="group" class="active">Grouped</button><button type="button" data-m="stack">Stacked</button>';
+    tg.addEventListener('click', (e)=>{
+      const b = e.target.closest('button[data-m]'); if(!b) return;
+      stacked[key] = b.dataset.m === 'stack';
+      tg.querySelectorAll('button').forEach(x => x.classList.toggle('active', x === b));
+      updateCharts();
+    });
+    holder.parentNode.insertBefore(wrap, holder); wrap.appendChild(tg); wrap.appendChild(holder);
+  });
+}
 /* ---------------- init ---------------- */
 (function init(){
   $('brandLogo').src = document.querySelector('.splash-logo img').src;
   readTheme();
   buildHead();
+  initToggles();
   initReveal();
   setSync('syncing');
   // 1) الشبكة تبدأ فورًا   2) في نفس الوقت نقرا الكاش المحلي ونعرضه لو وصل الأول
