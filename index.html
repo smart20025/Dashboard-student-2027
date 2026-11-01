@@ -384,7 +384,7 @@ table.t{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
 
 /* ---------- ترقيم الصفحات (Chrome 131+) وهوامش الورقة ---------- */
 @page{
-  margin:13mm 14mm 18mm 14mm;
+  margin:6mm 6mm 15mm 6mm;
   @bottom-center{
     content:"صفحة " counter(page) " من " counter(pages);
     font-family:'Cairo',sans-serif; font-size:9pt; color:#46606f;
@@ -401,13 +401,13 @@ table.t{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
 
   #reportPrintArea{display:block;direction:rtl;color:#0b2232;font-family:'Cairo','Inter',sans-serif;position:relative}
 
-  .rp-frame{position:fixed;top:-8mm;left:-9mm;right:-9mm;bottom:-13mm;border:1.1mm solid #00517c;border-radius:1.5mm;pointer-events:none;z-index:5}
+  .rp-frame{position:fixed;top:0;left:0;right:0;bottom:0;border:1.1mm solid #00517c;border-radius:1.5mm;pointer-events:none;z-index:5}
   .rp-frame::before{content:'';position:absolute;inset:1.3mm;border:.3mm solid #c98a2b}
   .rp-frame i{position:absolute;width:4.5mm;height:4.5mm;background:#c98a2b;transform:rotate(45deg)}
-  .rp-frame i:nth-child(1){top:-2.6mm;right:-2.6mm}
-  .rp-frame i:nth-child(2){top:-2.6mm;left:-2.6mm}
-  .rp-frame i:nth-child(3){bottom:-2.6mm;right:-2.6mm}
-  .rp-frame i:nth-child(4){bottom:-2.6mm;left:-2.6mm}
+  .rp-frame i:nth-child(1){top:-2.2mm;right:-2.2mm}
+  .rp-frame i:nth-child(2){top:-2.2mm;left:-2.2mm}
+  .rp-frame i:nth-child(3){bottom:-2.2mm;right:-2.2mm}
+  .rp-frame i:nth-child(4){bottom:-2.2mm;left:-2.2mm}
 
   .rp-wm{position:fixed;top:50%;left:50%;width:95mm;height:95mm;margin:-47.5mm 0 0 -47.5mm;opacity:.06;z-index:0}
   .rp-wm img{width:100%;height:100%;border-radius:50%;object-fit:cover}
@@ -454,6 +454,10 @@ table.t{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
   .rp-table td.sn{text-align:center;font-weight:700;color:#00517c;width:1%;background:rgba(0,81,124,.10)!important}
   .rp-table td.bk{min-width:18mm}
   .rp-table.has-blank td{height:9mm}
+  #reportPrintArea{padding:0 6mm}
+  .rp-table thead th.rp-sp,.rp-table tfoot td.rp-sp{padding:0;height:6.5mm;background:none!important;border:0!important}
+  .rp-table tfoot{display:table-footer-group}
+  .rp-end{margin-bottom:0}
 
   .bdg{display:inline-block;padding:1px 10px;border-radius:99px;font-size:9.5px;font-weight:700;line-height:1.7}
   .bdg.b-m{background:#dcecf8;color:#0b6fa8}
@@ -1820,7 +1824,7 @@ function generateReportPdf(){
       </div>
       <div class="rp-date"><b>${escapeHtml(dDate)}</b>${escapeHtml(dTime)}</div>
     </div>`;
-  const thead = `<tr><th class="rp-bh" colspan="${nCols}">${bannerHtml}</th></tr><tr>`
+  const thead = `<tr><th class="rp-sp" colspan="${nCols}"></th></tr><tr><th class="rp-bh" colspan="${nCols}">${bannerHtml}</th></tr><tr>`
     + (reportState.serial ? '<th class="sn">م</th>' : '')
     + cols.map(c => `<th>${escapeHtml(AR_LABELS[c.key] || c.label)}</th>`).join('')
     + reportState.blanks.map(n => `<th>${escapeHtml(n)}</th>`).join('')
@@ -1843,14 +1847,14 @@ function generateReportPdf(){
     <div class="rp-frame"><i></i><i></i><i></i><i></i></div>
     <div class="rp-wm"><img src="${logo}" alt=""></div>
     <table class="rp-table ${reportState.blanks.length ? 'has-blank' : ''}">
-      <thead>${thead}</thead><tbody>${tbody}</tbody>
+      <thead>${thead}</thead><tbody>${tbody}</tbody><tfoot><tr><td class="rp-sp" colspan="${nCols}"></td></tr></tfoot>
     </table>
     <div class="rp-end"><span>— نهاية التقرير · إجمالي ${fmt(rows.length)} طالب —</span></div>`;
 
   // اتجاه الورقة + الهوامش (بتسيب مكان للإطار والترقيم)
   let ps = $('reportPageStyle');
   if(!ps){ ps = document.createElement('style'); ps.id = 'reportPageStyle'; document.head.appendChild(ps); }
-  ps.textContent = `@page { size: A4 ${reportState.orientation}; margin: 13mm 14mm 18mm 14mm; }`;
+  ps.textContent = `@page { size: A4 ${reportState.orientation}; margin: 6mm 6mm 15mm 6mm; }`;
 
   closeReportModal();
   // نستنى الخطوط تجهز قبل الطباعة
