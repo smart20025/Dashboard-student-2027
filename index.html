@@ -374,22 +374,97 @@ table.t{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
   .reveal{opacity:1;transform:none}
 }
 
+/* ---------- أعمدة فاضية في نافذة التقرير ---------- */
+.blank-add{display:flex;gap:10px}
+.blank-add input{flex:1}
+.blank-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.blank-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 6px 5px 12px;border-radius:99px;background:var(--surface-2);border:1px dashed var(--brand-2);font-size:12.5px;font-weight:600}
+.blank-chip button{border:0;background:var(--surface-3);width:20px;height:20px;border-radius:50%;display:grid;place-items:center;padding:0;font-size:13px;line-height:1;color:var(--ink-2)}
+.blank-chip button:hover{background:var(--c4);color:#fff}
+
+/* ---------- ترقيم الصفحات (Chrome 131+) وهوامش الورقة ---------- */
+@page{
+  margin:13mm 14mm 18mm 14mm;
+  @bottom-center{
+    content:"صفحة " counter(page) " من " counter(pages);
+    font-family:'Cairo',sans-serif; font-size:9pt; color:#46606f;
+  }
+}
+
 /* ---------- print ---------- */
 #reportPrintArea{display:none}
 @media print{
   html,body{background:#fff!important}
   body::before{display:none}
   #app,.overlay,.drawer,.modal,#toast,#splash,#progress{display:none!important}
-  #reportPrintArea{display:block;color:#000;padding:0}
-  .rp-title{font-size:18px;font-weight:800;margin-bottom:4px;white-space:pre-wrap}
-  .rp-meta{font-size:11px;color:#555;margin-bottom:12px}
-  .rp-table{width:100%;border-collapse:collapse;font-size:11px}
-  .rp-table th,.rp-table td{border:1px solid #bbb;padding:5px 7px;text-align:left}
-  .rp-table th{background:#eee}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+
+  #reportPrintArea{display:block;direction:rtl;color:#0b2232;font-family:'Cairo','Inter',sans-serif;position:relative}
+
+  .rp-frame{position:fixed;top:-8mm;left:-9mm;right:-9mm;bottom:-13mm;border:1.1mm solid #00517c;border-radius:1.5mm;pointer-events:none;z-index:5}
+  .rp-frame::before{content:'';position:absolute;inset:1.3mm;border:.3mm solid #c98a2b}
+  .rp-frame i{position:absolute;width:4.5mm;height:4.5mm;background:#c98a2b;transform:rotate(45deg)}
+  .rp-frame i:nth-child(1){top:-2.6mm;right:-2.6mm}
+  .rp-frame i:nth-child(2){top:-2.6mm;left:-2.6mm}
+  .rp-frame i:nth-child(3){bottom:-2.6mm;right:-2.6mm}
+  .rp-frame i:nth-child(4){bottom:-2.6mm;left:-2.6mm}
+
+  .rp-wm{position:fixed;top:50%;left:50%;width:95mm;height:95mm;margin:-47.5mm 0 0 -47.5mm;opacity:.06;z-index:0}
+  .rp-wm img{width:100%;height:100%;border-radius:50%;object-fit:cover}
+
+  .rp-banner{position:relative;display:flex;align-items:center;gap:14px;padding:12px 18px 14px;border-radius:14px;overflow:hidden;color:#fff;margin-bottom:10px;z-index:1;
+    background:linear-gradient(115deg,#011f33 0%,#00517c 58%,#0b86c4 125%)}
+  .rp-banner::after{content:'';position:absolute;left:0;right:0;bottom:0;height:3px;background:linear-gradient(90deg,#c98a2b,#f2b84b,#c98a2b)}
+  .rp-banner .o1{position:absolute;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.08);left:-45px;top:-80px}
+  .rp-banner .o2{position:absolute;width:90px;height:90px;border-radius:50%;background:rgba(242,184,75,.30);left:130px;bottom:-55px}
+  .rp-banner .o3{position:absolute;width:110px;height:60px;right:90px;top:0;opacity:.5;background-image:radial-gradient(rgba(255,255,255,.55) 1px,transparent 1.4px);background-size:9px 9px}
+  .rp-logo{position:relative;width:62px;height:62px;border-radius:50%;background:#fff;padding:2px;flex:none;box-shadow:0 0 0 3px rgba(255,255,255,.35)}
+  .rp-logo img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}
+  .rp-bt{position:relative;flex:1;min-width:0}
+  .rp-title{font-size:20px;font-weight:700;line-height:1.35;white-space:pre-wrap}
+  .rp-sub{font-size:10px;opacity:.85;margin-top:2px}
+  .rp-date{position:relative;text-align:center;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);border-radius:10px;padding:5px 12px;font-size:9.5px;line-height:1.6;flex:none}
+  .rp-date b{display:block;font-size:11.5px;font-weight:700}
+
+  .rp-stats{position:relative;z-index:1;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:8px}
+  .rp-stat{display:flex;flex-direction:column;background:#fff;border:1px solid #dbe6ef;border-right:4px solid var(--c);border-radius:10px;padding:5px 12px}
+  .rp-stat b{font-size:17px;line-height:1.3;color:var(--c);font-weight:700}
+  .rp-stat span{font-size:9.5px;color:#46606f;font-weight:600}
+
+  .rp-chips{position:relative;z-index:1;display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin-bottom:9px}
+  .rp-chip{padding:2px 11px;border-radius:99px;background:#e8f3fa;border:1px solid #b9d9ec;color:#00517c;font-size:9.5px;font-weight:600}
+  .rp-chip b{color:#46606f;font-weight:600}
+
+  .rp-table{position:relative;z-index:1;width:100%;border-collapse:separate;border-spacing:0;font-size:10px}
   .rp-table thead{display:table-header-group}
   .rp-table tr{page-break-inside:avoid}
-}
+  .rp-table th{background:linear-gradient(135deg,#00517c,#0b86c4);color:#fff;font-weight:700;padding:7px 8px;text-align:center;font-size:10px;white-space:nowrap;border-left:1px solid rgba(255,255,255,.22)}
+  .rp-table th:first-child{border-top-right-radius:9px}
+  .rp-table th:last-child{border-top-left-radius:9px;border-left:0}
+  .rp-table td{padding:5px 8px;text-align:right;vertical-align:middle;border-bottom:1px solid #dbe6ef;border-left:1px solid #e8eff5}
+  .rp-table td:first-child{border-right:1px solid #e8eff5}
+  .rp-table tbody tr:nth-child(even) td{background:rgba(0,81,124,.055)}
+  .rp-table td.c{text-align:center}
+  .rp-table td.num{direction:ltr;unicode-bidi:isolate;text-align:center}
+  .rp-table td.nm{font-weight:600}
+  .rp-table td.mt{color:#9aaab6;text-align:center}
+  .rp-table td.sn{text-align:center;font-weight:700;color:#00517c;width:1%;background:rgba(0,81,124,.10)!important}
+  .rp-table td.bk{min-width:18mm}
+  .rp-table.has-blank td{height:9mm}
 
+  .bdg{display:inline-block;padding:1px 10px;border-radius:99px;font-size:9.5px;font-weight:700;line-height:1.7}
+  .bdg.b-m{background:#dcecf8;color:#0b6fa8}
+  .bdg.b-f{background:#fbeccc;color:#a8691a}
+  .bdg.b-y{background:#d9f0e4;color:#1f7a4c}
+  .bdg.b-n,.bdg.lv-unknown{background:#edf1f4;color:#7b8c98}
+  .bdg.lv-excellent{background:#d6f0ed;color:#16766d}
+  .bdg.lv-very-good{background:#dcecf8;color:#0b6fa8}
+  .bdg.lv-good{background:#fbeccc;color:#a8691a}
+  .bdg.lv-poor{background:#f9dde3;color:#b53a54}
+
+  .rp-end{position:relative;z-index:1;margin-top:12px;text-align:center;page-break-inside:avoid}
+  .rp-end span{display:inline-block;padding:4px 20px;border-radius:99px;background:#e8f3fa;border:1px dashed #6cc1ee;color:#00517c;font-size:10px;font-weight:700}
+}
 </style>
 </head>
 <body>
@@ -611,8 +686,17 @@ table.t{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
       </div>
       <div id="reportStep3" style="display:none">
         <p class="hint">Choose which columns should appear in the report.</p>
+        <label class="col-chk" style="margin-bottom:14px"><input type="checkbox" id="reportSerial" checked> إظهار عمود المسلسل (م)</label>
         <div class="cols-actions"><button type="button" class="mini-btn" id="reportColsAll">Select all</button><button type="button" class="mini-btn" id="reportColsNone">Clear all</button></div>
         <div class="cols-grid" id="reportColumnsGrid"></div>
+        <div class="rep-field" style="margin-top:20px">
+          <label>أعمدة فاضية (للكتابة اليدوية بعد الطباعة)</label>
+          <div class="blank-add">
+            <input type="text" id="reportBlankName" placeholder="اسم العمود — مثال: الحضور، ملاحظات، التوقيع">
+            <button type="button" class="btn" id="reportBlankAdd">+ إضافة</button>
+          </div>
+          <div class="blank-list" id="reportBlankList"></div>
+        </div>
       </div>
     </div>
     <div class="modal-foot">
@@ -1519,7 +1603,9 @@ const REPORT_FILTER_FIELDS = [
   {key:'bus', label:'Bus'}, {key:'busLine', label:'Bus line'}, {key:'courses', label:'Courses'},
 ];
 const REPORT_OUTPUT_FIELDS = COLS;
-const reportState = {step:1, filters:{}, sortBy:'', sortDir:'asc', orientation:'portrait', header:'Student Report',
+const reportState = {step:1, filters:{}, sortBy:'', sortDir:'asc', orientation:'portrait', header:'تقرير الطلاب',
+  serial:true,        // عمود المسلسل
+  blanks:[],          // أسماء الأعمدة الفاضية
   columns:new Set(['name','gender','grade','cls','motherPhone','fatherPhone'])};
 
 function getReportBaseFilters(){
@@ -1612,7 +1698,11 @@ function setReportStep(step){
   $('reportBackBtn').style.display = step===1 ? 'none' : '';
   $('reportNextBtn').textContent = step===3 ? 'Generate PDF' : 'Next';
   if(step===1) renderReportFilterGrid();
-  if(step===3) renderReportColumnsGrid();
+  if(step===3){
+    renderReportColumnsGrid();
+    $('reportSerial').checked = reportState.serial;
+    renderReportBlankList();
+  }
 }
 function openReportModal(){
   if(!DATA.length) return;
@@ -1640,27 +1730,137 @@ $('reportBackBtn').addEventListener('click', ()=>{ if(reportState.step > 1) setR
 $('reportHeaderInput').addEventListener('input', (e)=>{ reportState.header = e.target.value; });
 $('reportNextBtn').addEventListener('click', ()=>{ if(reportState.step < 3) setReportStep(reportState.step + 1); else generateReportPdf(); });
 
+/* ---------- الأعمدة الفاضية ---------- */
+function renderReportBlankList(){
+  const box = $('reportBlankList');
+  box.innerHTML = reportState.blanks.length
+    ? reportState.blanks.map((n,i)=>`<span class="blank-chip">${escapeHtml(n || '(بدون اسم)')}<button type="button" data-i="${i}" aria-label="حذف">×</button></span>`).join('')
+    : '<span class="muted" style="font-size:12.5px">لسه مفيش أعمدة فاضية</span>';
+}
+function addReportBlank(){
+  const inp = $('reportBlankName');
+  reportState.blanks.push(inp.value.trim());
+  inp.value = ''; renderReportBlankList(); inp.focus();
+}
+$('reportBlankAdd').addEventListener('click', addReportBlank);
+$('reportBlankName').addEventListener('keydown', (e)=>{ if(e.key === 'Enter'){ e.preventDefault(); addReportBlank(); } });
+$('reportBlankList').addEventListener('click', (e)=>{
+  const b = e.target.closest('button[data-i]'); if(!b) return;
+  reportState.blanks.splice(Number(b.dataset.i), 1); renderReportBlankList();
+});
+$('reportSerial').addEventListener('change', (e)=>{ reportState.serial = e.target.checked; });
+
+/* ---------- عناوين وقيم عربي للتقرير ---------- */
+const AR_LABELS = {
+  name:'الاسم', gender:'النوع', grade:'الصف الدراسي', division:'القسم', cls:'الفصل', lang2:'اللغة الثانية',
+  level:'المستوى', stage:'المرحلة', bus:'الباص', busLine:'خط الباص', courses:'الدورات',
+  emergencyPhone:'تليفون الطوارئ', motherPhone:'تليفون الأم', fatherPhone:'تليفون الأب',
+  address:'العنوان', classera:'Classera', admission:'Admission'
+};
+const AR_FILTER = {stage:'المرحلة', division:'القسم', grade:'الصف', cls:'الفصل', gender:'النوع', lang2:'اللغة الثانية',
+  level:'المستوى', bus:'الباص', busLine:'خط الباص', courses:'الدورات'};
+const REP_CENTER = new Set(['gender','grade','division','cls','lang2','level','stage','bus','busLine','courses','classera','admission']);
+const REP_NUM = new Set(['emergencyPhone','motherPhone','fatherPhone','classera','admission']);
+
+function repVal(key, v){
+  v = String(v ?? '');
+  if(key === 'gender') return v === 'Male' ? 'ذكر' : v === 'Female' ? 'أنثى' : v;
+  if(key === 'bus') return v === 'Yes' ? 'مشترك' : v === 'No' ? 'غير مشترك' : v;
+  if(key === 'busLine' && v === 'Not Assigned') return '';
+  if(key === 'lang2' && v === 'Not Registered') return 'غير مسجل';
+  if(key === 'stage') return STAGE_LABELS[v] || v;
+  if(key === 'courses') return splitCourses(v).map(courseLabel).join('، ');
+  return v;
+}
+function repCell(d, key){
+  const v = repVal(key, d[key]);
+  if(!v) return '<td class="mt">—</td>';
+  const e = escapeHtml(v);
+  if(key === 'gender') return `<td class="c"><span class="bdg ${d.gender==='Male'?'b-m':'b-f'}">${e}</span></td>`;
+  if(key === 'bus')    return `<td class="c"><span class="bdg ${d.bus==='Yes'?'b-y':'b-n'}">${e}</span></td>`;
+  if(key === 'level')  return `<td class="c"><span class="bdg ${levelClass(d.level)}">${e}</span></td>`;
+  if(key === 'name')   return `<td class="nm">${e}</td>`;
+  if(REP_NUM.has(key)) return `<td class="num">${e}</td>`;
+  return `<td class="${REP_CENTER.has(key) ? 'c' : ''}">${e}</td>`;
+}
+
+/* ---------- توليد التقرير ---------- */
 function generateReportPdf(){
   const rows = reportMatchedRows();
   const cols = REPORT_OUTPUT_FIELDS.filter(f => reportState.columns.has(f.key));
   if(!cols.length){ toast('Pick at least one column to include in the report.', 5000); return; }
   if(!rows.length){ toast('No students match the filters you chose.', 5000); return; }
-  const summary = REPORT_FILTER_FIELDS.filter(f => reportState.filters[f.key]).map(f => {
-    const v = reportState.filters[f.key];
-    return `${f.label}: ${Array.isArray(v) ? v.join(', ') : (f.key==='stage' ? (STAGE_LABELS[v]||v) : v)}`;
-  }).join(' · ') || 'All students';
-  const thead = '<tr>' + cols.map(c => `<th>${escapeHtml(c.label)}</th>`).join('') + '</tr>';
-  const tbody = rows.map(r => '<tr>' + cols.map(c => `<td dir="auto">${escapeHtml(r[c.key] ?? '')}</td>`).join('') + '</tr>').join('');
-  const header = (reportState.header || '').trim() || 'Student Report';
+
+  const logo = $('brandLogo').src;   // اللوجو من الهيدر (الـ splash بيتشال بعد التحميل)
+  const now = new Date();
+  const dDate = now.toLocaleDateString('ar-EG-u-nu-latn', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+  const dTime = now.toLocaleTimeString('ar-EG-u-nu-latn', {hour:'2-digit', minute:'2-digit'});
+  const header = (reportState.header || '').trim() || 'تقرير الطلاب';
+
+  // إحصائيات
+  const male = rows.filter(r => r.gender === 'Male').length;
+  const female = rows.filter(r => r.gender === 'Female').length;
+  const classes = new Set(rows.map(r => r.cls)).size;
+  const stat = (label, val, color) => `<div class="rp-stat" style="--c:${color}"><b>${fmt(val)}</b><span>${label}</span></div>`;
+
+  // شيبات الفلاتر
+  const chipsHtml = REPORT_FILTER_FIELDS.filter(f => { const v = reportState.filters[f.key]; return Array.isArray(v) ? v.length : v; })
+    .map(f => {
+      const v = reportState.filters[f.key];
+      const txt = (Array.isArray(v) ? v : [v]).map(x => repVal(f.key, x)).join('، ');
+      return `<span class="rp-chip"><b>${AR_FILTER[f.key] || f.label}:</b> ${escapeHtml(txt)}</span>`;
+    }).join('') || '<span class="rp-chip"><b>الفلتر:</b> كل الطلاب</span>';
+
+  // الجدول: المسلسل أول عمود (يمين)، والأعمدة الفاضية في الآخر (شمال)
+  const thead = '<tr>'
+    + (reportState.serial ? '<th class="sn">م</th>' : '')
+    + cols.map(c => `<th>${escapeHtml(AR_LABELS[c.key] || c.label)}</th>`).join('')
+    + reportState.blanks.map(n => `<th>${escapeHtml(n)}</th>`).join('')
+    + '</tr>';
+  const tbody = rows.map((r,i) => '<tr>'
+    + (reportState.serial ? `<td class="sn">${i+1}</td>` : '')
+    + cols.map(c => repCell(r, c.key)).join('')
+    + reportState.blanks.map(() => '<td class="bk"></td>').join('')
+    + '</tr>').join('');
+
   $('reportPrintArea').innerHTML = `
-    <div class="rp-title">${escapeHtml(header)}</div>
-    <div class="rp-meta">${escapeHtml(summary)} — ${fmt(rows.length)} student${rows.length===1?'':'s'} — generated ${escapeHtml(new Date().toLocaleString())}</div>
-    <table class="rp-table"><thead>${thead}</thead><tbody>${tbody}</tbody></table>`;
+    <div class="rp-frame"><i></i><i></i><i></i><i></i></div>
+    <div class="rp-wm"><img src="${logo}" alt=""></div>
+
+    <div class="rp-banner">
+      <span class="o1"></span><span class="o2"></span><span class="o3"></span>
+      <div class="rp-logo"><img src="${logo}" alt=""></div>
+      <div class="rp-bt">
+        <div class="rp-title">${escapeHtml(header)}</div>
+        <div class="rp-sub">Student Insights Dashboard · إعداد: محمد عبد الفتاح</div>
+      </div>
+      <div class="rp-date"><b>${escapeHtml(dDate)}</b>${escapeHtml(dTime)}</div>
+    </div>
+
+    <div class="rp-stats">
+      ${stat('إجمالي الطلاب', rows.length, '#00517c')}
+      ${stat('بنين', male, '#0b86c4')}
+      ${stat('بنات', female, '#c98a2b')}
+      ${stat('عدد الفصول', classes, '#1f9d92')}
+    </div>
+
+    <div class="rp-chips">${chipsHtml}</div>
+
+    <table class="rp-table ${reportState.blanks.length ? 'has-blank' : ''}">
+      <thead>${thead}</thead><tbody>${tbody}</tbody>
+    </table>
+
+    <div class="rp-end"><span>— نهاية التقرير · إجمالي ${fmt(rows.length)} طالب —</span></div>`;
+
+  // اتجاه الورقة + الهوامش (بتسيب مكان للإطار والترقيم)
   let ps = $('reportPageStyle');
   if(!ps){ ps = document.createElement('style'); ps.id = 'reportPageStyle'; document.head.appendChild(ps); }
-  ps.textContent = `@page { size: A4 ${reportState.orientation}; margin: 12mm; }`;
+  ps.textContent = `@page { size: A4 ${reportState.orientation}; margin: 13mm 14mm 18mm 14mm; }`;
+
   closeReportModal();
-  setTimeout(()=> window.print(), 120);
+  // نستنى الخطوط تجهز قبل الطباعة
+  const go = ()=> setTimeout(()=> window.print(), 200);
+  (document.fonts && document.fonts.ready) ? document.fonts.ready.then(go) : go();
 }
 
 /* ---------------- reveal on scroll ---------------- */
