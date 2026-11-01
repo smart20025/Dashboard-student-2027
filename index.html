@@ -443,7 +443,10 @@ table.t{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
   .rp-table th:last-child{border-top-left-radius:9px;border-left:0}
   .rp-table td{padding:5px 8px;text-align:right;vertical-align:middle;border-bottom:1px solid #dbe6ef;border-left:1px solid #e8eff5}
   .rp-table td:first-child{border-right:1px solid #e8eff5}
-  .rp-table tbody tr:nth-child(even) td{background:rgba(0,81,124,.055)}
+  .rp-table tbody tr:nth-child(odd) td{background:rgba(0,81,124,.055)}
+  .rp-table thead th.rp-bh{padding:0 0 6px;background:none;border:0;text-align:right;white-space:normal;border-radius:0}
+  .rp-table thead th.rp-bh .rp-banner{margin-bottom:0}
+  .rp-table tr.rp-statrow td{padding:0 0 8px;border:0;background:none!important}
   .rp-table td.c{text-align:center}
   .rp-table td.num{direction:ltr;unicode-bidi:isolate;text-align:center}
   .rp-table td.nm{font-weight:600}
@@ -1803,30 +1806,11 @@ function generateReportPdf(){
   const classes = new Set(rows.map(r => r.cls)).size;
   const stat = (label, val, color) => `<div class="rp-stat" style="--c:${color}"><b>${fmt(val)}</b><span>${label}</span></div>`;
 
-  // شيبات الفلاتر
-  const chipsHtml = REPORT_FILTER_FIELDS.filter(f => { const v = reportState.filters[f.key]; return Array.isArray(v) ? v.length : v; })
-    .map(f => {
-      const v = reportState.filters[f.key];
-      const txt = (Array.isArray(v) ? v : [v]).map(x => repVal(f.key, x)).join('، ');
-      return `<span class="rp-chip"><b>${AR_FILTER[f.key] || f.label}:</b> ${escapeHtml(txt)}</span>`;
-    }).join('') || '<span class="rp-chip"><b>الفلتر:</b> كل الطلاب</span>';
-
   // الجدول: المسلسل أول عمود (يمين)، والأعمدة الفاضية في الآخر (شمال)
-  const thead = '<tr>'
-    + (reportState.serial ? '<th class="sn">م</th>' : '')
-    + cols.map(c => `<th>${escapeHtml(AR_LABELS[c.key] || c.label)}</th>`).join('')
-    + reportState.blanks.map(n => `<th>${escapeHtml(n)}</th>`).join('')
-    + '</tr>';
-  const tbody = rows.map((r,i) => '<tr>'
-    + (reportState.serial ? `<td class="sn">${i+1}</td>` : '')
-    + cols.map(c => repCell(r, c.key)).join('')
-    + reportState.blanks.map(() => '<td class="bk"></td>').join('')
-    + '</tr>').join('');
+  const nCols = (reportState.serial ? 1 : 0) + cols.length + reportState.blanks.length;
 
-  $('reportPrintArea').innerHTML = `
-    <div class="rp-frame"><i></i><i></i><i></i><i></i></div>
-    <div class="rp-wm"><img src="${logo}" alt=""></div>
-
+  // البانر جوه الـ thead عشان يتكرر أعلى كل صفحة
+  const bannerHtml = `
     <div class="rp-banner">
       <span class="o1"></span><span class="o2"></span><span class="o3"></span>
       <div class="rp-logo"><img src="${logo}" alt=""></div>
@@ -1835,21 +1819,32 @@ function generateReportPdf(){
         <div class="rp-sub">Student Insights Dashboard · إعداد: محمد عبد الفتاح</div>
       </div>
       <div class="rp-date"><b>${escapeHtml(dDate)}</b>${escapeHtml(dTime)}</div>
-    </div>
+    </div>`;
+  const thead = `<tr><th class="rp-bh" colspan="${nCols}">${bannerHtml}</th></tr><tr>`
+    + (reportState.serial ? '<th class="sn">م</th>' : '')
+    + cols.map(c => `<th>${escapeHtml(AR_LABELS[c.key] || c.label)}</th>`).join('')
+    + reportState.blanks.map(n => `<th>${escapeHtml(n)}</th>`).join('')
+    + '</tr>';
 
-    <div class="rp-stats">
+  // الكروت الإحصائية: أول صف في الجدول (بتظهر في الصفحة الأولى بس)
+  const statsRow = `<tr class="rp-statrow"><td colspan="${nCols}"><div class="rp-stats">
       ${stat('إجمالي الطلاب', rows.length, '#00517c')}
       ${stat('بنين', male, '#0b86c4')}
       ${stat('بنات', female, '#c98a2b')}
       ${stat('عدد الفصول', classes, '#1f9d92')}
-    </div>
+    </div></td></tr>`;
+  const tbody = statsRow + rows.map((r,i) => '<tr>'
+    + (reportState.serial ? `<td class="sn">${i+1}</td>` : '')
+    + cols.map(c => repCell(r, c.key)).join('')
+    + reportState.blanks.map(() => '<td class="bk"></td>').join('')
+    + '</tr>').join('');
 
-    <div class="rp-chips">${chipsHtml}</div>
-
+  $('reportPrintArea').innerHTML = `
+    <div class="rp-frame"><i></i><i></i><i></i><i></i></div>
+    <div class="rp-wm"><img src="${logo}" alt=""></div>
     <table class="rp-table ${reportState.blanks.length ? 'has-blank' : ''}">
       <thead>${thead}</thead><tbody>${tbody}</tbody>
     </table>
-
     <div class="rp-end"><span>— نهاية التقرير · إجمالي ${fmt(rows.length)} طالب —</span></div>`;
 
   // اتجاه الورقة + الهوامش (بتسيب مكان للإطار والترقيم)
