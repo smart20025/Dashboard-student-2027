@@ -403,10 +403,10 @@ table.t{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
   linear-gradient(#00517c,#00517c) 100% 0/14px 3px no-repeat,linear-gradient(#00517c,#00517c) 100% 0/3px 14px no-repeat,
   linear-gradient(#00517c,#00517c) 0 100%/14px 3px no-repeat,linear-gradient(#00517c,#00517c) 0 100%/3px 14px no-repeat,
   linear-gradient(#00517c,#00517c) 100% 100%/14px 3px no-repeat,linear-gradient(#00517c,#00517c) 100% 100%/3px 14px no-repeat,#fff}
-.seg{display:flex;gap:8px;flex-wrap:wrap}
-.seg button{flex:1;min-width:84px;padding:10px 12px;border-radius:12px;border:2px solid var(--line-2);background:var(--surface-2);font-weight:700;font-size:13px;transition:all .25s var(--ease)}
-.seg button:hover{border-color:var(--brand-2)}
-.seg button.active{border-color:var(--brand-2);background:rgba(11,134,196,.1)}
+.rseg{display:flex;gap:8px;flex-wrap:wrap}
+.rseg button{color:var(--ink);flex:1;min-width:84px;padding:10px 12px;border-radius:12px;border:2px solid var(--line-2);background:var(--surface-2);font-weight:700;font-size:13px;transition:all .25s var(--ease)}
+.rseg button:hover{border-color:var(--brand-2)}
+.rseg button.active{border-color:var(--brand-2);background:rgba(11,134,196,.1)}
 
 /* ---------- print ---------- */
 #reportPrintArea{display:none}
@@ -754,8 +754,8 @@ table.t{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
       <div id="reportStep4" style="display:none">
         <p class="hint">شكل التقرير — اختار الإطار وحجم الخط والإضافات اللي تعجبك.</p>
         <div class="rep-field"><label>الإطار</label><div class="frames" id="reportFrames"></div></div>
-        <div class="rep-field" style="margin-top:18px"><label>حجم الخط</label><div class="seg" id="reportFontSeg"></div></div>
-        <div class="rep-field" style="margin-top:18px"><label>شكل الهيدر</label><div class="seg" id="reportBannerSeg"></div></div>
+        <div class="rep-field" style="margin-top:18px"><label>حجم الخط</label><div class="rseg" id="reportFontSeg"></div></div>
+        <div class="rep-field" style="margin-top:18px"><label>شكل الهيدر</label><div class="rseg" id="reportBannerSeg"></div></div>
         <div class="rep-field" style="margin-top:18px"><label>الإضافات</label><div class="cols-grid" id="reportOptsGrid"></div></div>
       </div>
     </div>
