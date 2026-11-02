@@ -385,6 +385,29 @@ table.t{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
 /* ---------- هوامش الورقة = صفر عشان المتصفح ميطبعش اللينك/التاريخ/العنوان في الهيدر والفوتر ---------- */
 @page{ margin:0; }
 
+/* ---------- خطوة التصميم في نافذة التقرير ---------- */
+.frames{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:10px}
+.frm{display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px 8px;border-radius:14px;border:2px solid var(--line-2);background:var(--surface-2);font-weight:700;font-size:12.5px;transition:all .25s var(--ease)}
+.frm:hover{border-color:var(--brand-2)}
+.frm.active{border-color:var(--brand-2);background:rgba(11,134,196,.1);transform:translateY(-2px)}
+.frm .pv{width:44px;height:60px;background:#fff;position:relative;border-radius:3px;box-sizing:border-box}
+.pv.f-none{border:1px dashed #cfdbe5}
+.pv.f-classic{border:3px solid #00517c;outline:1px solid #c98a2b;outline-offset:-5px}
+.pv.f-double{border:1.5px solid #00517c;box-shadow:inset 0 0 0 3px #fff,inset 0 0 0 4.5px #00517c}
+.pv.f-simple{border:1.5px solid #00517c;border-radius:6px}
+.pv.f-bold{border:5px solid #00517c;border-radius:8px}
+.pv.f-gold{border:2.5px solid #c98a2b;outline:1px solid #00517c;outline-offset:-5px}
+.pv.f-dashed{border:2px dashed #0b86c4;border-radius:8px}
+.pv.f-corners{background:
+  linear-gradient(#00517c,#00517c) 0 0/14px 3px no-repeat,linear-gradient(#00517c,#00517c) 0 0/3px 14px no-repeat,
+  linear-gradient(#00517c,#00517c) 100% 0/14px 3px no-repeat,linear-gradient(#00517c,#00517c) 100% 0/3px 14px no-repeat,
+  linear-gradient(#00517c,#00517c) 0 100%/14px 3px no-repeat,linear-gradient(#00517c,#00517c) 0 100%/3px 14px no-repeat,
+  linear-gradient(#00517c,#00517c) 100% 100%/14px 3px no-repeat,linear-gradient(#00517c,#00517c) 100% 100%/3px 14px no-repeat,#fff}
+.seg{display:flex;gap:8px;flex-wrap:wrap}
+.seg button{flex:1;min-width:84px;padding:10px 12px;border-radius:12px;border:2px solid var(--line-2);background:var(--surface-2);font-weight:700;font-size:13px;transition:all .25s var(--ease)}
+.seg button:hover{border-color:var(--brand-2)}
+.seg button.active{border-color:var(--brand-2);background:rgba(11,134,196,.1)}
+
 /* ---------- print ---------- */
 #reportPrintArea{display:none}
 @media print{
@@ -393,67 +416,92 @@ table.t{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
   #app,.overlay,.drawer,.modal,#toast,#splash,#progress{display:none!important}
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 
-  #reportPrintArea{display:block;direction:rtl;color:#0b2232;font-family:'Cairo','Inter',sans-serif;position:relative}
+  #reportPrintArea{display:block;direction:rtl;color:#0b2232;font-family:'Cairo','Inter',sans-serif;position:relative;background:#fff;font-size:var(--rp-fs,15px)}
 
-  .rp-frame{position:fixed;top:0;left:0;right:0;bottom:0;border:1.1mm solid #00517c;border-radius:1.5mm;pointer-events:none;z-index:5}
-  .rp-frame::before{content:'';position:absolute;inset:1.3mm;border:.3mm solid #c98a2b}
-  .rp-frame i{position:absolute;width:4.5mm;height:4.5mm;background:#c98a2b;transform:rotate(45deg)}
-  .rp-frame i:nth-child(1){top:-2.2mm;right:-2.2mm}
-  .rp-frame i:nth-child(2){top:-2.2mm;left:-2.2mm}
-  .rp-frame i:nth-child(3){bottom:-2.2mm;right:-2.2mm}
-  .rp-frame i:nth-child(4){bottom:-2.2mm;left:-2.2mm}
+  /* ===== الإطارات ===== */
+  .rp-frame{position:fixed;top:3mm;left:3mm;right:3mm;bottom:3mm;pointer-events:none;z-index:5;box-sizing:border-box}
+  .rp-frame i{display:none;position:absolute}
+  .rp-frame.f-none{display:none}
+  .rp-frame.f-classic{border:1.1mm solid #00517c;border-radius:1.5mm}
+  .rp-frame.f-classic::before{content:'';position:absolute;inset:1.3mm;border:.3mm solid #c98a2b}
+  .rp-frame.f-classic i{display:block;width:4.5mm;height:4.5mm;background:#c98a2b;transform:rotate(45deg)}
+  .rp-frame.f-classic i:nth-child(1){top:-2.2mm;right:-2.2mm}
+  .rp-frame.f-classic i:nth-child(2){top:-2.2mm;left:-2.2mm}
+  .rp-frame.f-classic i:nth-child(3){bottom:-2.2mm;right:-2.2mm}
+  .rp-frame.f-classic i:nth-child(4){bottom:-2.2mm;left:-2.2mm}
+  .rp-frame.f-double{border:.5mm solid #00517c}
+  .rp-frame.f-double::before{content:'';position:absolute;inset:1.4mm;border:.5mm solid #00517c}
+  .rp-frame.f-simple{border:.4mm solid #00517c;border-radius:2.5mm}
+  .rp-frame.f-bold{border:2mm solid #00517c;border-radius:3mm}
+  .rp-frame.f-gold{border:.9mm solid #c98a2b}
+  .rp-frame.f-gold::before{content:'';position:absolute;inset:1.6mm;border:.3mm solid #00517c}
+  .rp-frame.f-dashed{border:.7mm dashed #0b86c4;border-radius:3mm}
+  .rp-frame.f-corners i{display:block;width:16mm;height:16mm;border:0 solid #00517c}
+  .rp-frame.f-corners i:nth-child(1){top:0;right:0;border-top-width:1.2mm;border-right-width:1.2mm}
+  .rp-frame.f-corners i:nth-child(2){top:0;left:0;border-top-width:1.2mm;border-left-width:1.2mm}
+  .rp-frame.f-corners i:nth-child(3){bottom:0;right:0;border-bottom-width:1.2mm;border-right-width:1.2mm}
+  .rp-frame.f-corners i:nth-child(4){bottom:0;left:0;border-bottom-width:1.2mm;border-left-width:1.2mm}
 
-  .rp-wm{position:fixed;top:50%;left:50%;width:95mm;height:95mm;margin:-47.5mm 0 0 -47.5mm;opacity:.06;z-index:0}
-  .rp-wm img{width:100%;height:100%;border-radius:50%;object-fit:cover}
-
-  .rp-banner{position:relative;display:flex;align-items:center;gap:14px;padding:12px 18px 14px;border-radius:14px;overflow:hidden;color:#fff;margin-bottom:10px;z-index:1;
+  /* ===== الهيدر ===== */
+  .rp-banner{position:relative;display:flex;align-items:center;gap:.9em;padding:.8em 1.2em .9em;border-radius:1em;overflow:hidden;color:#fff;margin-bottom:.6em;z-index:1;
     background:linear-gradient(115deg,#011f33 0%,#00517c 58%,#0b86c4 125%)}
   .rp-banner::after{content:'';position:absolute;left:0;right:0;bottom:0;height:3px;background:linear-gradient(90deg,#c98a2b,#f2b84b,#c98a2b)}
   .rp-banner .o1{position:absolute;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.08);left:-45px;top:-80px}
   .rp-banner .o2{position:absolute;width:90px;height:90px;border-radius:50%;background:rgba(242,184,75,.30);left:130px;bottom:-55px}
   .rp-banner .o3{position:absolute;width:110px;height:60px;right:90px;top:0;opacity:.5;background-image:radial-gradient(rgba(255,255,255,.55) 1px,transparent 1.4px);background-size:9px 9px}
-  .rp-logo{position:relative;width:62px;height:62px;border-radius:50%;background:#fff;padding:2px;flex:none;box-shadow:0 0 0 3px rgba(255,255,255,.35)}
+  .rp-banner.bn-plain{background:#fff;color:#00517c;border:.35mm solid #b9d9ec;border-bottom:1.2mm solid #00517c}
+  .rp-banner.bn-plain::after,.rp-banner.bn-plain .o1,.rp-banner.bn-plain .o2,.rp-banner.bn-plain .o3{display:none}
+  .rp-banner.bn-plain .rp-date{background:#f4f9fc;border-color:#b9d9ec;color:#00517c}
+  .rp-banner.bn-plain .rp-logo{box-shadow:0 0 0 1px #b9d9ec}
+  .rp-logo{position:relative;width:4.4em;height:4.4em;border-radius:50%;background:#fff;padding:2px;flex:none;box-shadow:0 0 0 3px rgba(255,255,255,.35)}
   .rp-logo img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}
   .rp-bt{position:relative;flex:1;min-width:0}
-  .rp-title{font-size:20px;font-weight:700;line-height:1.35;white-space:pre-wrap}
-  .rp-sub{font-size:10px;opacity:.85;margin-top:2px}
-  .rp-date{position:relative;text-align:center;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);border-radius:10px;padding:5px 12px;font-size:9.5px;line-height:1.6;flex:none}
-  .rp-date b{display:block;font-size:11.5px;font-weight:700}
+  .rp-title{font-size:1.55em;font-weight:700;line-height:1.35;white-space:pre-wrap}
+  .rp-sub{font-size:.72em;opacity:.85;margin-top:2px}
+  .rp-date{position:relative;text-align:center;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);border-radius:.8em;padding:.4em .9em;font-size:.78em;line-height:1.6;flex:none}
+  .rp-date b{display:block;font-size:1.1em;font-weight:700}
 
-  .rp-stats{position:relative;z-index:1;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:8px}
-  .rp-stat{display:flex;flex-direction:column;background:#fff;border:1px solid #dbe6ef;border-right:4px solid var(--c);border-radius:10px;padding:5px 12px}
-  .rp-stat b{font-size:17px;line-height:1.3;color:var(--c);font-weight:700}
-  .rp-stat span{font-size:9.5px;color:#46606f;font-weight:600}
-
-  .rp-chips{position:relative;z-index:1;display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin-bottom:9px}
-  .rp-chip{padding:2px 11px;border-radius:99px;background:#e8f3fa;border:1px solid #b9d9ec;color:#00517c;font-size:9.5px;font-weight:600}
+  /* ===== الأعداد + الفلاتر ===== */
+  .rp-stats{position:relative;z-index:1;display:grid;grid-template-columns:repeat(4,1fr);gap:.6em;margin-bottom:.5em}
+  .rp-stat{display:flex;flex-direction:column;background:#fff;border:1px solid #dbe6ef;border-right:4px solid var(--c);border-radius:.7em;padding:.35em .9em}
+  .rp-stat b{font-size:1.5em;line-height:1.3;color:var(--c);font-weight:700}
+  .rp-stat span{font-size:.8em;color:#46606f;font-weight:600}
+  .rp-chips{position:relative;z-index:1;display:flex;flex-wrap:wrap;align-items:center;gap:.4em;margin-bottom:.5em}
+  .rp-chip{padding:.1em .8em;border-radius:99px;background:#fff;border:1px solid #b9d9ec;color:#00517c;font-size:.78em;font-weight:600}
   .rp-chip b{color:#46606f;font-weight:600}
 
-  .rp-table{position:relative;z-index:1;width:100%;border-collapse:separate;border-spacing:0;font-size:10px}
+  /* ===== الجدول (خلفية بيضا بالكامل) ===== */
+  .rp-table{position:relative;z-index:1;width:100%;border-collapse:separate;border-spacing:0;background:#fff}
   .rp-table thead{display:table-header-group}
   .rp-table tr{page-break-inside:avoid}
-  .rp-table th{background:linear-gradient(135deg,#00517c,#0b86c4);color:#fff;font-weight:700;padding:7px 8px;text-align:center;font-size:10px;white-space:nowrap;border-left:1px solid rgba(255,255,255,.22)}
+  .rp-table th{background:linear-gradient(135deg,#00517c,#0b86c4);color:#fff;font-weight:700;padding:.5em .5em;text-align:center;font-size:1em;border-left:1px solid rgba(255,255,255,.22)}
   .rp-table th:first-child{border-top-right-radius:9px}
   .rp-table th:last-child{border-top-left-radius:9px;border-left:0}
-  .rp-table td{padding:5px 8px;text-align:right;vertical-align:middle;border-bottom:1px solid #dbe6ef;border-left:1px solid #e8eff5}
+  .rp-table td{padding:.38em .6em;text-align:right;vertical-align:middle;border-bottom:1px solid #dbe6ef;border-left:1px solid #e8eff5;background:#fff}
   .rp-table td:first-child{border-right:1px solid #e8eff5}
-  .rp-table tbody tr:nth-child(odd) td{background:rgba(0,81,124,.055)}
+  .rp-table.zebra tbody tr.z td{background:#f2f8fc}
   .rp-table thead th.rp-bh{padding:0 0 6px;background:none;border:0;text-align:right;white-space:normal;border-radius:0}
   .rp-table thead th.rp-bh .rp-banner{margin-bottom:0}
-  .rp-table tr.rp-statrow td{padding:0 0 8px;border:0;background:none!important}
+  .rp-table tr.rp-statrow td{padding:0 0 .5em;border:0;background:none!important}
   .rp-table td.c{text-align:center}
-  .rp-table td.num{direction:ltr;unicode-bidi:isolate;text-align:center}
-  .rp-table td.nm{font-weight:600}
+  .rp-table td.num{direction:ltr;unicode-bidi:isolate;text-align:center;white-space:nowrap}
+  .rp-table td.nm{font-weight:700}
   .rp-table td.mt{color:#9aaab6;text-align:center}
-  .rp-table td.sn{text-align:center;font-weight:700;color:#00517c;width:1%;background:rgba(0,81,124,.10)!important}
-  .rp-table td.bk{min-width:18mm}
-  .rp-table.has-blank td{height:9mm}
+  .rp-table td.sn{text-align:center;font-weight:700;color:#00517c;width:1%;white-space:nowrap}
+  .rp-table td.bk{min-width:4em}
+  .rp-table.has-blank td{height:2.6em}
   #reportPrintArea{padding:0 12mm}
   .rp-table thead th.rp-sp,.rp-table tfoot td.rp-sp{padding:0;height:11mm;background:none!important;border:0!important}
   .rp-table tfoot{display:table-footer-group}
   .rp-end{margin-bottom:0}
+  .rp-table tr.rp-grp td{background:#e8f3fa!important;color:#00517c;font-weight:700;font-size:1.05em;padding:.45em .8em;border-bottom:1px solid #b9d9ec;text-align:right;break-after:avoid;page-break-after:avoid}
+  .rp-table tr.rp-grp td small{font-size:.8em;font-weight:600;color:#46606f}
+  .rp-table tr.rp-grp.pb{break-before:page;page-break-before:always}
+  .rp-sign{position:relative;z-index:1;display:flex;gap:10mm;margin-top:9mm;page-break-inside:avoid}
+  .rp-sign div{flex:1;text-align:center;font-size:.9em;font-weight:700;color:#46606f}
+  .rp-sign div::after{content:'';display:block;margin-top:13mm;border-top:.3mm solid #8499a6}
 
-  .bdg{display:inline-block;padding:1px 10px;border-radius:99px;font-size:9.5px;font-weight:700;line-height:1.7}
+  .bdg{display:inline-block;padding:1px 10px;border-radius:99px;font-size:.88em;font-weight:700;line-height:1.7}
   .bdg.b-m{background:#dcecf8;color:#0b6fa8}
   .bdg.b-f{background:#fbeccc;color:#a8691a}
   .bdg.b-y{background:#d9f0e4;color:#1f7a4c}
@@ -464,7 +512,7 @@ table.t{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
   .bdg.lv-poor{background:#f9dde3;color:#b53a54}
 
   .rp-end{position:relative;z-index:1;margin-top:12px;text-align:center;page-break-inside:avoid}
-  .rp-end span{display:inline-block;padding:4px 20px;border-radius:99px;background:#e8f3fa;border:1px dashed #6cc1ee;color:#00517c;font-size:10px;font-weight:700}
+  .rp-end span{display:inline-block;padding:4px 20px;border-radius:99px;background:#e8f3fa;border:1px dashed #6cc1ee;color:#00517c;font-size:.9em;font-weight:700}
 }
 </style>
 </head>
@@ -667,8 +715,8 @@ table.t{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
 <div class="overlay" id="reportOverlay"></div>
 <div class="modal" id="reportModal">
   <div class="modal-card">
-    <div class="modal-head"><h3 id="reportStepTitle">Step 1 of 3 — Filter students</h3><button class="x-btn" id="reportCloseBtn" type="button" aria-label="Close">✕</button></div>
-    <div class="steps" id="reportSteps"><i class="on"></i><i></i><i></i></div>
+    <div class="modal-head"><h3 id="reportStepTitle">Step 1 of 4 — Filter students</h3><button class="x-btn" id="reportCloseBtn" type="button" aria-label="Close">✕</button></div>
+    <div class="steps" id="reportSteps"><i class="on"></i><i></i><i></i><i></i></div>
     <div class="modal-body">
       <div id="reportStep1">
         <p class="hint">Pick a value for any column you want to narrow down by. Leave a column on "All" to include every value.</p>
@@ -684,6 +732,10 @@ table.t{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
         <div class="rep-field"><label>Sort report rows by</label>
           <div class="sort-row"><select id="reportSortBy"></select><select id="reportSortDir"><option value="asc">A → Z / Low → High</option><option value="desc">Z → A / High → Low</option></select></div>
         </div>
+        <div class="rep-field" style="margin-top:16px"><label for="reportGroupBy">تجميع الطلاب حسب (اختياري)</label>
+          <select id="reportGroupBy"></select>
+        </div>
+        <label class="col-chk" style="margin-top:10px"><input type="checkbox" id="reportGroupBreak"> كل مجموعة تبدأ في صفحة جديدة</label>
       </div>
       <div id="reportStep3" style="display:none">
         <p class="hint">Choose which columns should appear in the report.</p>
@@ -698,6 +750,13 @@ table.t{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
           </div>
           <div class="blank-list" id="reportBlankList"></div>
         </div>
+      </div>
+      <div id="reportStep4" style="display:none">
+        <p class="hint">شكل التقرير — اختار الإطار وحجم الخط والإضافات اللي تعجبك.</p>
+        <div class="rep-field"><label>الإطار</label><div class="frames" id="reportFrames"></div></div>
+        <div class="rep-field" style="margin-top:18px"><label>حجم الخط</label><div class="seg" id="reportFontSeg"></div></div>
+        <div class="rep-field" style="margin-top:18px"><label>شكل الهيدر</label><div class="seg" id="reportBannerSeg"></div></div>
+        <div class="rep-field" style="margin-top:18px"><label>الإضافات</label><div class="cols-grid" id="reportOptsGrid"></div></div>
       </div>
     </div>
     <div class="modal-foot">
@@ -1607,6 +1666,9 @@ const REPORT_OUTPUT_FIELDS = COLS;
 const reportState = {step:1, filters:{}, sortBy:'', sortDir:'asc', orientation:'portrait', header:'تقرير الطلاب',
   serial:true,        // عمود المسلسل
   blanks:[],          // أسماء الأعمدة الفاضية
+  groupBy:'', groupBreak:false,
+  frame:'classic', fontKey:'l', banner:'color',
+  opts:{showStats:true, showLogo:true, showDate:true, showChips:true, grpCounts:true, zebra:false, showSign:false},
   columns:new Set(['name','gender','grade','cls','motherPhone','fatherPhone'])};
 
 function getReportBaseFilters(){
@@ -1693,17 +1755,19 @@ function renderReportColumnsGrid(){
 }
 function setReportStep(step){
   reportState.step = step;
-  [1,2,3].forEach(n => $('reportStep'+n).style.display = step===n ? '' : 'none');
+  [1,2,3,4].forEach(n => $('reportStep'+n).style.display = step===n ? '' : 'none');
   [...$('reportSteps').children].forEach((el,i)=> el.classList.toggle('on', i < step));
-  $('reportStepTitle').textContent = step===1 ? 'Step 1 of 3 — Filter students' : step===2 ? 'Step 2 of 3 — Page layout' : 'Step 3 of 3 — Choose columns';
+  $('reportStepTitle').textContent = step===1 ? 'Step 1 of 4 — Filter students' : step===2 ? 'Step 2 of 4 — Page layout' : step===3 ? 'Step 3 of 4 — Choose columns' : 'Step 4 of 4 — Report design';
   $('reportBackBtn').style.display = step===1 ? 'none' : '';
-  $('reportNextBtn').textContent = step===3 ? 'Generate PDF' : 'Next';
+  $('reportNextBtn').textContent = step===4 ? 'Generate PDF' : 'Next';
   if(step===1) renderReportFilterGrid();
+  if(step===2){ $('reportGroupBy').value = reportState.groupBy; $('reportGroupBreak').checked = reportState.groupBreak; }
   if(step===3){
     renderReportColumnsGrid();
     $('reportSerial').checked = reportState.serial;
     renderReportBlankList();
   }
+  if(step===4) renderReportStyle();
 }
 function openReportModal(){
   if(!DATA.length) return;
@@ -1729,7 +1793,7 @@ $('reportColsAll').addEventListener('click', ()=>{ REPORT_OUTPUT_FIELDS.forEach(
 $('reportColsNone').addEventListener('click', ()=>{ reportState.columns.clear(); renderReportColumnsGrid(); });
 $('reportBackBtn').addEventListener('click', ()=>{ if(reportState.step > 1) setReportStep(reportState.step - 1); });
 $('reportHeaderInput').addEventListener('input', (e)=>{ reportState.header = e.target.value; });
-$('reportNextBtn').addEventListener('click', ()=>{ if(reportState.step < 3) setReportStep(reportState.step + 1); else generateReportPdf(); });
+$('reportNextBtn').addEventListener('click', ()=>{ if(reportState.step < 4) setReportStep(reportState.step + 1); else generateReportPdf(); });
 
 /* ---------- الأعمدة الفاضية ---------- */
 function renderReportBlankList(){
@@ -1750,6 +1814,53 @@ $('reportBlankList').addEventListener('click', (e)=>{
   reportState.blanks.splice(Number(b.dataset.i), 1); renderReportBlankList();
 });
 $('reportSerial').addEventListener('change', (e)=>{ reportState.serial = e.target.checked; });
+
+/* ---------- التجميع + التصميم ---------- */
+const REPORT_GROUPS = [['','بدون تجميع'],['cls','الفصل'],['grade','الصف'],['stage','المرحلة'],['division','القسم'],['gender','النوع'],['level','المستوى'],['lang2','اللغة الثانية'],['bus','الباص'],['busLine','خط الباص']];
+$('reportGroupBy').innerHTML = REPORT_GROUPS.map(g => `<option value="${g[0]}">${g[1]}</option>`).join('');
+$('reportGroupBy').addEventListener('change', e => { reportState.groupBy = e.target.value; });
+$('reportGroupBreak').addEventListener('change', e => { reportState.groupBreak = e.target.checked; });
+
+const REPORT_FRAMES = [['none','بدون إطار'],['classic','كلاسيك'],['double','مزدوج'],['simple','بسيط'],['bold','عريض'],['gold','ذهبي'],['dashed','منقّط'],['corners','أركان']];
+const REPORT_FONTS = [{k:'s',l:'عادي',px:11},{k:'m',l:'كبير',px:13},{k:'l',l:'كبير جداً',px:15},{k:'xl',l:'ضخم',px:17}];
+const REPORT_BANNERS = [['color','ملوّن'],['plain','أبيض بسيط']];
+const REPORT_OPTS = [
+  ['showStats','إظهار الأعداد (الإجمالي / بنين / بنات / الفصول)'],
+  ['showLogo','اللوجو جوه الهيدر'],
+  ['showDate','التاريخ والوقت في الهيدر'],
+  ['showChips','إظهار الفلاتر المطبّقة أعلى الجدول'],
+  ['grpCounts','عدد الطلاب في عنوان كل مجموعة'],
+  ['zebra','تظليل الصفوف بالتبادل'],
+  ['showSign','خانة إعداد / مراجعة / اعتماد في آخر التقرير'],
+];
+function renderReportStyle(){
+  const fr = $('reportFrames'); fr.innerHTML = '';
+  REPORT_FRAMES.forEach(([k,l]) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'frm' + (reportState.frame===k ? ' active' : '');
+    b.innerHTML = `<span class="pv f-${k}"></span>${l}`;
+    b.onclick = ()=>{ reportState.frame = k; renderReportStyle(); };
+    fr.appendChild(b);
+  });
+  const mk = (holder, list, cur, set) => {
+    holder.innerHTML = '';
+    list.forEach(it => {
+      const b = document.createElement('button'); b.type = 'button'; b.textContent = it.l || it[1];
+      const key = it.k || it[0];
+      if(cur === key) b.className = 'active';
+      b.onclick = ()=>{ set(key); renderReportStyle(); };
+      holder.appendChild(b);
+    });
+  };
+  mk($('reportFontSeg'), REPORT_FONTS, reportState.fontKey, k => reportState.fontKey = k);
+  mk($('reportBannerSeg'), REPORT_BANNERS, reportState.banner, k => reportState.banner = k);
+  const og = $('reportOptsGrid'); og.innerHTML = '';
+  REPORT_OPTS.forEach(([k,l]) => {
+    const lab = document.createElement('label'); lab.className = 'col-chk';
+    lab.innerHTML = `<input type="checkbox" ${reportState.opts[k] ? 'checked' : ''}> ${l}`;
+    lab.querySelector('input').addEventListener('change', e => { reportState.opts[k] = e.target.checked; });
+    og.appendChild(lab);
+  });
+}
 
 /* ---------- عناوين وقيم عربي للتقرير ---------- */
 const AR_LABELS = {
@@ -1792,7 +1903,11 @@ function generateReportPdf(){
   if(!cols.length){ toast('Pick at least one column to include in the report.', 5000); return; }
   if(!rows.length){ toast('No students match the filters you chose.', 5000); return; }
 
-  const logo = $('brandLogo').src;   // اللوجو من الهيدر (الـ splash بيتشال بعد التحميل)
+  const o = reportState.opts;
+  const gk = reportState.groupBy;
+  if(gk) rows.sort((a,b)=> COLLATOR.compare(String(a[gk]??''), String(b[gk]??'')));   // sort ثابت: ترتيب المستخدم محفوظ جوه كل مجموعة
+
+  const logo = $('brandLogo').src;
   const now = new Date();
   const dDate = now.toLocaleDateString('ar-EG-u-nu-latn', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
   const dTime = now.toLocaleTimeString('ar-EG-u-nu-latn', {hour:'2-digit', minute:'2-digit'});
@@ -1802,21 +1917,21 @@ function generateReportPdf(){
   const male = rows.filter(r => r.gender === 'Male').length;
   const female = rows.filter(r => r.gender === 'Female').length;
   const classes = new Set(rows.map(r => r.cls)).size;
+  const pct = n => rows.length ? Math.round(n * 100 / rows.length) : 0;
   const stat = (label, val, color) => `<div class="rp-stat" style="--c:${color}"><b>${fmt(val)}</b><span>${label}</span></div>`;
 
-  // الجدول: المسلسل أول عمود (يمين)، والأعمدة الفاضية في الآخر (شمال)
   const nCols = (reportState.serial ? 1 : 0) + cols.length + reportState.blanks.length;
 
   // البانر جوه الـ thead عشان يتكرر أعلى كل صفحة
   const bannerHtml = `
-    <div class="rp-banner">
+    <div class="rp-banner${reportState.banner === 'plain' ? ' bn-plain' : ''}">
       <span class="o1"></span><span class="o2"></span><span class="o3"></span>
-      <div class="rp-logo"><img src="${logo}" alt=""></div>
+      ${o.showLogo ? `<div class="rp-logo"><img src="${logo}" alt=""></div>` : ''}
       <div class="rp-bt">
         <div class="rp-title">${escapeHtml(header)}</div>
         <div class="rp-sub">Student Insights Dashboard · إعداد: محمد عبد الفتاح</div>
       </div>
-      <div class="rp-date"><b>${escapeHtml(dDate)}</b>${escapeHtml(dTime)}</div>
+      ${o.showDate ? `<div class="rp-date"><b>${escapeHtml(dDate)}</b>${escapeHtml(dTime)}</div>` : ''}
     </div>`;
   const thead = `<tr><th class="rp-sp" colspan="${nCols}"></th></tr><tr><th class="rp-bh" colspan="${nCols}">${bannerHtml}</th></tr><tr>`
     + (reportState.serial ? '<th class="sn">م</th>' : '')
@@ -1824,28 +1939,66 @@ function generateReportPdf(){
     + reportState.blanks.map(n => `<th>${escapeHtml(n)}</th>`).join('')
     + '</tr>';
 
-  // الكروت الإحصائية: أول صف في الجدول (بتظهر في الصفحة الأولى بس)
-  const statsRow = `<tr class="rp-statrow"><td colspan="${nCols}"><div class="rp-stats">
+  // الفلاتر المطبقة
+  let chipsHtml = '';
+  if(o.showChips){
+    const fl = {...getReportBaseFilters(), ...reportState.filters};
+    const chips = [];
+    Object.keys(fl).forEach(k => {
+      let v = fl[k];
+      if(Array.isArray(v)) v = v.map(x => repVal(k, x)).filter(Boolean).join('، ');
+      else if(typeof v === 'string') v = k === 'search' ? v : repVal(k, v);
+      else return;
+      if(!v) return;
+      chips.push(`<span class="rp-chip"><b>${escapeHtml(AR_FILTER[k] || (k === 'search' ? 'بحث' : k))}:</b> ${escapeHtml(v)}</span>`);
+    });
+    if(chips.length) chipsHtml = `<div class="rp-chips">${chips.join('')}</div>`;
+  }
+
+  // الأعداد: أول صف في الجدول (بتظهر في الصفحة الأولى بس)
+  const statsHtml = o.showStats ? `<div class="rp-stats">
       ${stat('إجمالي الطلاب', rows.length, '#00517c')}
-      ${stat('بنين', male, '#0b86c4')}
-      ${stat('بنات', female, '#c98a2b')}
+      ${stat('بنين (' + pct(male) + '%)', male, '#0b86c4')}
+      ${stat('بنات (' + pct(female) + '%)', female, '#c98a2b')}
       ${stat('عدد الفصول', classes, '#1f9d92')}
-    </div></td></tr>`;
-  const tbody = statsRow + rows.map((r,i) => '<tr>'
-    + (reportState.serial ? `<td class="sn">${i+1}</td>` : '')
-    + cols.map(c => repCell(r, c.key)).join('')
-    + reportState.blanks.map(() => '<td class="bk"></td>').join('')
-    + '</tr>').join('');
+    </div>` : '';
+  const topRow = (statsHtml || chipsHtml) ? `<tr class="rp-statrow"><td colspan="${nCols}">${statsHtml}${chipsHtml}</td></tr>` : '';
 
-  $('reportPrintArea').innerHTML = `
-    <div class="rp-frame"><i></i><i></i><i></i><i></i></div>
-    <div class="rp-wm"><img src="${logo}" alt=""></div>
-    <table class="rp-table ${reportState.blanks.length ? 'has-blank' : ''}">
-      <thead>${thead}</thead><tbody>${tbody}</tbody><tfoot><tr><td class="rp-sp" colspan="${nCols}"></td></tr></tfoot>
+  // الصفوف (مع التجميع لو متفعّل)
+  const groups = new Map();
+  if(gk){ rows.forEach(r => { const g = String(r[gk] ?? ''); if(!groups.has(g)) groups.set(g, []); groups.get(g).push(r); }); }
+  else groups.set('', rows);
+  let body = ''; let gIdx = 0;
+  groups.forEach((list, g) => {
+    if(gk){
+      const m = list.filter(r => r.gender === 'Male').length, f = list.filter(r => r.gender === 'Female').length;
+      const cnt = o.grpCounts ? ` <small>— ${fmt(list.length)} طالب (${fmt(m)} بنين · ${fmt(f)} بنات)</small>` : '';
+      body += `<tr class="rp-grp${reportState.groupBreak && gIdx > 0 ? ' pb' : ''}"><td colspan="${nCols}">${escapeHtml(AR_FILTER[gk] || gk)}: ${escapeHtml(repVal(gk, g) || 'غير محدد')}${cnt}</td></tr>`;
+    }
+    list.forEach((r, i) => {
+      body += `<tr${i % 2 ? ' class="z"' : ''}>`
+        + (reportState.serial ? `<td class="sn">${i+1}</td>` : '')
+        + cols.map(c => repCell(r, c.key)).join('')
+        + reportState.blanks.map(() => '<td class="bk"></td>').join('')
+        + '</tr>';
+    });
+    gIdx++;
+  });
+
+  const signHtml = o.showSign ? '<div class="rp-sign"><div>إعداد</div><div>مراجعة</div><div>اعتماد</div></div>' : '';
+  const fs = (REPORT_FONTS.find(x => x.k === reportState.fontKey) || REPORT_FONTS[2]).px;
+  const area = $('reportPrintArea');
+  area.style.setProperty('--rp-fs', fs + 'px');
+
+  area.innerHTML = `
+    <div class="rp-frame f-${reportState.frame}"><i></i><i></i><i></i><i></i></div>
+    <table class="rp-table${reportState.blanks.length ? ' has-blank' : ''}${o.zebra ? ' zebra' : ''}">
+      <thead>${thead}</thead><tbody>${topRow}${body}</tbody><tfoot><tr><td class="rp-sp" colspan="${nCols}"></td></tr></tfoot>
     </table>
-    <div class="rp-end"><span>— نهاية التقرير · إجمالي ${fmt(rows.length)} طالب —</span></div>`;
+    <div class="rp-end"><span>— نهاية التقرير · إجمالي ${fmt(rows.length)} طالب —</span></div>
+    ${signHtml}`;
 
-  // اتجاه الورقة + الهوامش (بتسيب مكان للإطار والترقيم)
+  // اتجاه الورقة + الهوامش
   let ps = $('reportPageStyle');
   if(!ps){ ps = document.createElement('style'); ps.id = 'reportPageStyle'; document.head.appendChild(ps); }
   ps.textContent = `@page { size: A4 ${reportState.orientation}; margin: 0; }`;
