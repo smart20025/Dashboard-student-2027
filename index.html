@@ -574,6 +574,9 @@ body.view-cards main.wrap > :not(.tabs):not(#cardsView){display:none!important}
 .idc-bgimg{position:absolute;left:0;top:0;width:100%;height:100%;display:block;pointer-events:none;-webkit-user-drag:none}
 /* لما صورة التصميم تتحمّل: نخفي الأشكال المرسومة بـ CSS ونسيب النص والصورة الشخصية بس */
 .idc.has-img .idc-bg,.idc.has-img .idc-line,.idc.has-img .idc-pill .ic,.idc.has-img .idc-ph .pi svg,.idc.has-img .idc-addr .hi,.idc.has-img .idc-bus .rg,.idc.has-img .idc-bus svg{display:none}
+.idc.has-img .e-logo,.idc.has-img .e-brand,.idc.has-img .e-line,.idc.has-img .e-frame{display:none!important}
+/* اللوجو واسم المدرسة والخط والإطار موجودين جوه صورة الكارت نفسها */
+.idc.has-img .idc-pin{border-radius:176px 0 161px 14px / 209px 0 180px 14px}
 .idc.has-img .idc-photo{border-color:transparent;background:transparent}
 .idc.has-img .idc-pill .pl,.idc.has-img .idc-ph .pi,.idc.has-img .idc-sp{background:none}
 .idc.has-img .idc-addr .ab{border:0;background:none;margin-left:0}
@@ -2354,7 +2357,7 @@ const CARD_IMG_DIR = 'cards';
 const DEF = {
   front:{
     frame:{x:68,y:62,w:496,h:498},
-    pic:{x:90,y:84,w:452,h:454},
+    pic:{x:89,y:85,w:459,h:458},
     logo:{x:697,y:33,w:203,h:203},
     brand:{x:935,y:78,w:320,h:165,fs:84},
     line:{x:805,y:256,w:402,h:5},
