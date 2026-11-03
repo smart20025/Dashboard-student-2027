@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#00517c">
 <title>Student Insights Dashboard</title>
+<div class="photo-box" id="photoBox"><img alt=""></div>
 <script>
 /* يحدد الثيم قبل أول رسم عشان ميحصلش وميض */
 (function(){try{var t=localStorage.getItem('sid_theme');if(!t)t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','light');}})();
@@ -243,7 +244,7 @@ table.t{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
 .t tbody tr:hover td{background:var(--surface-2)}
 .t tbody tr:hover td:first-child{box-shadow:inset 3px 0 0 var(--brand-2)}
 .name-cell{display:flex;align-items:center;gap:11px;font-weight:700;min-width:230px}
-.avatar{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:14px;color:#fff;flex:none;background:linear-gradient(135deg,var(--av1),var(--av2))}
+.avatar{position:relative;overflow:hidden;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:14px;color:#fff;flex:none;background:linear-gradient(135deg,var(--av1),var(--av2))}
 .tag{display:inline-block;padding:3px 11px;border-radius:99px;font-size:11.5px;font-weight:700}
 .tag.male{background:rgba(11,134,196,.13);color:var(--c1)}
 .tag.female{background:rgba(201,138,43,.15);color:var(--c2)}
@@ -408,6 +409,13 @@ table.t{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
 .rseg button:hover{border-color:var(--brand-2)}
 .rseg button.active{border-color:var(--brand-2);background:rgba(11,134,196,.1)}
 
+/* ---------- صور الطلاب ---------- */
+.av-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#fff;display:block}
+#drAvatar .av-img{cursor:zoom-in}
+.photo-box{position:fixed;inset:0;z-index:500;background:rgba(2,12,20,.82);display:none;align-items:center;justify-content:center;padding:20px;cursor:zoom-out}
+.photo-box.on{display:flex}
+.photo-box img{max-width:min(92vw,520px);max-height:86vh;border-radius:18px;background:#fff;box-shadow:var(--shadow-2)}
+
 /* ---------- print ---------- */
 #reportPrintArea{display:none}
 @media print{
@@ -489,6 +497,8 @@ table.t{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
   .rp-table td.mt{color:#9aaab6;text-align:center}
   .rp-table td.sn{text-align:center;font-weight:700;color:#00517c;width:1%;white-space:nowrap}
   .rp-table td.bk{min-width:4em}
+  .rp-table td.ph{text-align:center;padding:.25em .4em;width:1%}
+  .rp-photo{width:3.4em;height:3.4em;border-radius:50%;object-fit:cover;display:block;margin:0 auto;border:1px solid #dbe6ef;background:#fff}
   .rp-table.has-blank td{height:2.6em}
   #reportPrintArea{padding:0 12mm}
   .rp-table thead th.rp-sp,.rp-table tfoot td.rp-sp{padding:0;height:11mm;background:none!important;border:0!important}
@@ -847,10 +857,33 @@ function avatarColors(name){
   let h = 0; for(let i=0;i<name.length;i++) h = (h*31 + name.charCodeAt(i)) % 360;
   return [`hsl(${h} 70% 52%)`, `hsl(${(h+40)%360} 68% 40%)`];
 }
+/* ---------------- صور الطلاب ----------------
+   - اسم الصورة = كود الـ Admission (مثلاً 12345.jpg) جوه فولدر الصور
+   - PHOTO_BASE = رابط فولدر الصور (لازم ينتهي بـ /) بيشتغل مع أي استضافة:
+       GitHub Pages :  'https://USERNAME.github.io/REPO/photos/'
+       فولدر جنب الـ index.html :  'photos/'
+   - لو سبته فاضي الصور بتتقفل ويظهر حرف الاسم زي الأول */
+const PHOTO_BASE = 'photos/';
+const PHOTO_EXTS = ['.jpg','.png','.jpeg','.webp'];   // بيجرّب بالترتيب لحد ما يلاقي الصورة
+const PHOTO_OK = {};                                  // الامتداد اللي نجح لكل طالب (عشان ما يعيدش المحاولة)
+function admissionId(d){ return String(d.admission || '').trim().replace(/\.0+$/,'').replace(/[^\w\-]/g,''); }
+function photoUrl(id, i){ return PHOTO_BASE.replace(/\/+$/, '') + '/' + encodeURIComponent(id) + PHOTO_EXTS[i]; }
+function photoImgHtml(d, cls, eager){
+  if(!PHOTO_BASE) return '';
+  const id = admissionId(d); if(!id) return '';
+  const i = PHOTO_OK[id] ?? 0;
+  return `<img class="${cls}" ${eager ? '' : 'loading="lazy"'} decoding="async" alt="" data-id="${id}" data-i="${i}" src="${photoUrl(id, i)}" onload="phOk(this)" onerror="phErr(this)">`;
+}
+function phOk(img){ PHOTO_OK[img.dataset.id] = +img.dataset.i; }
+function phErr(img){
+  const i = +img.dataset.i + 1;
+  if(i < PHOTO_EXTS.length){ img.dataset.i = i; img.src = photoUrl(img.dataset.id, i); }
+  else img.remove();                                   // مفيش صورة: يفضل حرف الاسم
+}
 function avatarHtml(d, cls=''){
   const [a,b] = avatarColors(d.name);
   const ch = (d.name.trim().match(/[\p{L}\p{N}]/u)||['?'])[0].toUpperCase();
-  return `<span class="avatar ${cls}" style="--av1:${a};--av2:${b}">${escapeHtml(ch)}</span>`;
+  return `<span class="avatar ${cls}" style="--av1:${a};--av2:${b}">${escapeHtml(ch)}${photoImgHtml(d, 'av-img')}</span>`;
 }
 
 /* ---------------- state ---------------- */
@@ -1582,6 +1615,7 @@ function openStudent(i){
   const [a,b] = avatarColors(d.name);
   const av = $('drAvatar'); av.textContent = (d.name.trim().match(/[\p{L}\p{N}]/u)||['?'])[0].toUpperCase();
   av.style.setProperty('--av1', a); av.style.setProperty('--av2', b);
+  av.insertAdjacentHTML('beforeend', photoImgHtml(d, 'av-img', true));
   $('drName').textContent = d.name;
   $('drTags').innerHTML = [d.grade, d.cls, STAGE_LABELS[d.stage]||d.stage, d.division].filter(Boolean).map(t=>`<span>${escapeHtml(t)}</span>`).join('');
   const phones = [['Mother', d.motherPhone], ['Father', d.fatherPhone], ['Emergency', d.emergencyPhone]].filter(p => p[1] && normPhone(p[1]));
@@ -1662,7 +1696,7 @@ const REPORT_FILTER_FIELDS = [
   {key:'gender', label:'Gender'}, {key:'lang2', label:'Second language'}, {key:'level', label:'Student level'},
   {key:'bus', label:'Bus'}, {key:'busLine', label:'Bus line'}, {key:'courses', label:'Courses'},
 ];
-const REPORT_OUTPUT_FIELDS = COLS;
+const REPORT_OUTPUT_FIELDS = PHOTO_BASE ? [{key:'photo', label:'Photo'}, ...COLS] : COLS;
 const reportState = {step:1, filters:{}, sortBy:'', sortDir:'asc', orientation:'portrait', header:'تقرير الطلاب',
   serial:true,        // عمود المسلسل
   blanks:[],          // أسماء الأعمدة الفاضية
@@ -1774,7 +1808,7 @@ function openReportModal(){
   reportState.filters = getReportBaseFilters();
   $('reportHeaderInput').value = reportState.header || 'Student Report';
   const sb = $('reportSortBy');
-  sb.innerHTML = '<option value="">Default order</option>' + REPORT_OUTPUT_FIELDS.map(f=>`<option value="${f.key}">${escapeHtml(f.label)}</option>`).join('');
+  sb.innerHTML = '<option value="">Default order</option>' + REPORT_OUTPUT_FIELDS.filter(f=>f.key!=='photo').map(f=>`<option value="${f.key}">${escapeHtml(f.label)}</option>`).join('');
   sb.value = reportState.sortBy || ''; sb.onchange = ()=>{ reportState.sortBy = sb.value; updateReportMatchCount(); };
   const sd = $('reportSortDir'); sd.value = reportState.sortDir || 'asc'; sd.onchange = ()=>{ reportState.sortDir = sd.value; updateReportMatchCount(); };
   $('reportOverlay').classList.add('open'); $('reportModal').classList.add('open');
@@ -1867,11 +1901,11 @@ const AR_LABELS = {
   name:'الاسم', gender:'النوع', grade:'الصف الدراسي', division:'القسم', cls:'الفصل', lang2:'اللغة الثانية',
   level:'المستوى', stage:'المرحلة', bus:'الباص', busLine:'خط الباص', courses:'الدورات',
   emergencyPhone:'تليفون الطوارئ', motherPhone:'تليفون الأم', fatherPhone:'تليفون الأب',
-  address:'العنوان', classera:'Classera', admission:'Admission'
+  address:'العنوان', classera:'Classera', admission:'Admission', photo:'الصورة'
 };
 const AR_FILTER = {stage:'المرحلة', division:'القسم', grade:'الصف', cls:'الفصل', gender:'النوع', lang2:'اللغة الثانية',
   level:'المستوى', bus:'الباص', busLine:'خط الباص', courses:'الدورات'};
-const REP_CENTER = new Set(['gender','grade','division','cls','lang2','level','stage','bus','busLine','courses','classera','admission']);
+const REP_CENTER = new Set(['photo','gender','grade','division','cls','lang2','level','stage','bus','busLine','courses','classera','admission']);
 const REP_NUM = new Set(['emergencyPhone','motherPhone','fatherPhone','classera','admission']);
 
 function repVal(key, v){
@@ -1885,6 +1919,7 @@ function repVal(key, v){
   return v;
 }
 function repCell(d, key){
+  if(key === 'photo'){ const im = photoImgHtml(d, 'rp-photo', true); return im ? `<td class="ph">${im}</td>` : '<td class="mt">—</td>'; }
   const v = repVal(key, d[key]);
   if(!v) return '<td class="mt">—</td>';
   const e = escapeHtml(v);
@@ -2005,9 +2040,26 @@ function generateReportPdf(){
 
   closeReportModal();
   // نستنى الخطوط تجهز قبل الطباعة
-  const go = ()=> setTimeout(()=> window.print(), 200);
+  // نستنى صور الطلاب كمان (أقصى حاجة 10 ثواني) عشان ما تطلعش فاضية في الـ PDF
+  const imgsReady = ()=> new Promise(res => {
+    const t0 = Date.now();
+    const chk = ()=> {
+      const pending = [...area.querySelectorAll('img')].some(im => im.isConnected && !(im.complete && im.naturalWidth > 0));
+      if(!pending || Date.now() - t0 > 10000) res(); else setTimeout(chk, 150);
+    };
+    chk();
+  });
+  const go = ()=> imgsReady().then(()=> setTimeout(()=> window.print(), 200));
   (document.fonts && document.fonts.ready) ? document.fonts.ready.then(go) : go();
 }
+
+/* ---------------- تكبير صورة الطالب ---------------- */
+$('drAvatar').addEventListener('click', e => {
+  const im = e.target.closest('img'); if(!im) return;
+  $('photoBox').querySelector('img').src = im.src; $('photoBox').classList.add('on');
+});
+$('photoBox').addEventListener('click', ()=> $('photoBox').classList.remove('on'));
+document.addEventListener('keydown', e => { if(e.key === 'Escape') $('photoBox').classList.remove('on'); });
 
 /* ---------------- reveal on scroll ---------------- */
 function initReveal(){
