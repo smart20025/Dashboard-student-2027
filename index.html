@@ -2531,7 +2531,41 @@ $('cvSelPage').addEventListener('click', () => { cvSorted().slice((CV.page - 1) 
 $('cvSelClear').addEventListener('click', () => { SEL.clear(); renderCardsView(); });
 
 /* ---------- tabs ---------- */
+/* ---------- باسورد تبويب الكروت (حماية شكلية — مخزّن كـ SHA-256 ويتفتكر على الجهاز) ---------- */
+const PASS_HASH = 'aed1d4b47b35486589ed4e2c04ba7fea0a985719b4ac5ca666770aeabb12bad3';
+const LS_OK = 'sid_cards_unlocked_v1';
+async function sha256Hex(str){
+  try{
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+  }catch(e){ return 'x' + hashStr(str); }   // لو المتصفح مش داعم التشفير
+}
+const isUnlocked = () => { try{ return localStorage.getItem(LS_OK) === PASS_HASH; }catch(e){ return false; } };
+function askPass(onOk){
+  let box = document.getElementById('passModal');
+  if(!box){
+    box = document.createElement('div');
+    box.id = 'passModal'; box.className = 'modal';
+    box.innerHTML = '<div class="modal-card" style="width:min(380px,100%)"><div class="modal-head"><h3>🔒 تبويب الكروت محمي</h3><button class="x-btn" id="passX" type="button" aria-label="Close">✕</button></div><div class="modal-body"><div class="rep-field"><label for="passInp">الباسورد</label><input type="password" id="passInp" autocomplete="off" style="width:100%;height:42px;padding:0 14px;border-radius:12px;border:1px solid var(--line-2);background:var(--surface-2)"></div><div id="passErr" style="color:var(--c4);font-weight:700;font-size:13px;margin-top:10px;min-height:18px"></div></div><div class="modal-foot"><div class="cnt"></div><div class="btns"><button class="btn btn-primary" id="passGo" type="button">دخول</button></div></div></div>';
+    document.body.appendChild(box);
+  }
+  const ov = $('reportOverlay'), inp = $('passInp'), err = $('passErr');
+  const close = () => { box.classList.remove('open'); ov.classList.remove('open'); ov.removeEventListener('click', close); };
+  const go = async () => {
+    if(await sha256Hex(inp.value) === PASS_HASH){
+      try{ localStorage.setItem(LS_OK, PASS_HASH); }catch(e){}
+      close(); onOk();
+    } else { err.textContent = 'الباسورد غلط'; inp.select(); }
+  };
+  $('passGo').onclick = go; $('passX').onclick = close; ov.addEventListener('click', close);
+  inp.onkeydown = e => { if(e.key === 'Enter') go(); else if(e.key === 'Escape') close(); };
+  box.onclick = e => { if(e.target === box) close(); };
+  inp.value = ''; err.textContent = '';
+  ov.classList.add('open'); box.classList.add('open');
+  setTimeout(() => inp.focus(), 60);
+}
 function setView(v){
+  if(v === 'cards' && !isUnlocked()){ askPass(() => setView('cards')); return; }
   CV.active = v === 'cards';
   document.body.classList.toggle('view-cards', CV.active);
   document.querySelectorAll('#mainTabs .tab').forEach(b => b.classList.toggle('active', b.dataset.view === v));
