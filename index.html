@@ -555,6 +555,11 @@ body.view-cards main.wrap > :not(.tabs):not(#cardsView){display:none!important}
 .idc-sides{display:flex;flex-wrap:wrap;gap:12px}
 .idc-box{position:relative;flex:none;width:calc(1400px * var(--s));height:calc(851px * var(--s));border-radius:calc(30px * var(--s));overflow:hidden;box-shadow:0 6px 20px -8px rgba(0,0,0,.4);cursor:pointer;background:#fff}
 .idc-box .idc{position:absolute;left:0;top:0;transform:scale(var(--s));transform-origin:0 0}
+.idc-item.picked{border-color:var(--brand-2);box-shadow:0 0 0 3px rgba(11,134,196,.2)}
+.idc-pick{width:18px;height:18px;accent-color:var(--brand-2);flex:none;cursor:pointer}
+.cv-selbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.cv-selbar .btn{height:34px;font-size:12.5px}
+#cvSelCount{font-weight:700;color:var(--ink-2);margin-right:auto}
 .cv-foot{margin-top:16px;border:1px solid var(--line);border-radius:16px}
 
 /* ----- the card itself (design space 1400 x 851) ----- */
@@ -574,12 +579,12 @@ body.view-cards main.wrap > :not(.tabs):not(#cardsView){display:none!important}
 .idc.editing .idc-el.sel{outline:4px solid #0b86c4;z-index:4}
 .idc.editing .idc-el.sel .idc-rs{display:block}
 .e-logo img{width:100%;height:100%;border-radius:50%;object-fit:cover;background:#fff;display:block;-webkit-user-drag:none}
-.e-photo{display:block}
+.e-frame,.e-pic{display:block}
 .idc-photo{position:relative;width:100%;height:100%;background:#fff;border:5px solid var(--ink);border-radius:170px 0 150px 36px}
-.idc-pin{position:absolute;inset:22px;overflow:hidden;border-radius:0 0 110px 0;background:#ddd}
+.idc-pin{position:absolute;inset:0;overflow:hidden;isolation:isolate;border-radius:0 0 110px 0;background:#ddd}
 .idc-pin svg{position:absolute;inset:0;width:100%;height:100%}
 .idc-pz{position:absolute;inset:0;transform-origin:center}
-.idc-pz img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;-webkit-user-drag:none}
+.idc-pz img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 12%;display:block;-webkit-user-drag:none}
 .idc-brand{width:100%;text-align:center}
 .idc-brand .b1{position:relative;display:inline-block;font-weight:800;color:#f7941d;line-height:.95;letter-spacing:.02em}
 .idc-brand .b1 svg{position:absolute;width:.42em;height:.42em;right:.1em;top:-.36em}
@@ -859,6 +864,13 @@ body.view-cards main.wrap > :not(.tabs):not(#cardsView){display:none!important}
       <div class="field"><label for="cvSide">Show</label><select id="cvSide"><option value="both">Front + Back</option><option value="front">Front only</option><option value="back">Back only</option></select></div>
       <div class="field"><label for="cvPer">Students per page</label><select id="cvPer"><option>6</option><option selected>12</option><option>24</option><option>48</option></select></div>
       <div class="field"><label for="cvSize">Preview size</label><input type="range" id="cvSize" min="240" max="720" value="400"></div>
+    </div>
+    <div class="cv-selbar">
+      <label class="col-chk"><input type="checkbox" id="cvOnlySel"> Selected only</label>
+      <span id="cvSelCount"></span>
+      <button class="btn" id="cvSelFiltered" type="button">Select all filtered</button>
+      <button class="btn" id="cvSelPage" type="button">Select this page</button>
+      <button class="btn" id="cvSelClear" type="button">Clear selection</button>
     </div>
     <div id="cvEmpty" class="empty-state" style="margin-top:18px"><strong>No cards match these filters</strong>Try clearing a filter or the search.</div>
     <div id="cardsGrid"></div>
@@ -2328,7 +2340,8 @@ const TYPES = ['green','yellow','red','blue'];
 
 const DEF = {
   front:{
-    photo:{x:68,y:62,w:496,h:498},
+    frame:{x:68,y:62,w:496,h:498},
+    pic:{x:90,y:84,w:452,h:454},
     logo:{x:697,y:33,w:203,h:203},
     brand:{x:935,y:78,w:320,h:165,fs:84},
     line:{x:805,y:256,w:402,h:5},
@@ -2347,7 +2360,7 @@ const DEF = {
     supAddr:{x:250,y:594,w:900,h:72,fs:40}
   }
 };
-const EL_NAMES = {photo:'Photo', logo:'Logo', brand:'School name', line:'Line', name:'Student name', cls:'Class', ph1:'Phone 1', ph2:'Phone 2', addr:'Address',
+const EL_NAMES = {frame:'Photo frame', pic:'Photo', logo:'Logo', brand:'School name', line:'Line', name:'Student name', cls:'Class', ph1:'Phone 1', ph2:'Phone 2', addr:'Address',
   bus:'Bus number', supLabel:'Supervisor phone', supPill:'Supervisor label', supAddr:'Supervisor name / area'};
 
 function getL(type, side){
@@ -2390,7 +2403,8 @@ function frontEls(d){
   const a = PA[pid(d)] || {}, z = a.z || 1, ox = a.x || 0, oy = a.y || 0;
   const [p1, p2] = phonesOf(d);
   return {
-    photo:`<div class="idc-photo"><div class="idc-pin">${PH_SVG}<div class="idc-pz" style="transform:translate(${ox}%,${oy}%) scale(${z})">${photoImgHtml(d, 'idc-img', true)}</div></div></div>`,
+    frame:'<div class="idc-photo"></div>',
+    pic:`<div class="idc-pin">${PH_SVG}<div class="idc-pz" style="transform:translate(${ox}%,${oy}%) scale(${z})">${photoImgHtml(d, 'idc-img', true)}</div></div>`,
     logo:`<img src="${logoSrc()}" alt="">`,
     brand:BRAND,
     line:'<div class="idc-line"></div>',
@@ -2436,13 +2450,15 @@ function fitCards(root){
 }
 
 /* ---------- cards view ---------- */
-const CV = {active:false, type:'all', side:'both', q:'', grade:'', cls:'', size:400, page:1, per:12};
+const SEL = new Set();
+const CV = {onlySel:false, active:false, type:'all', side:'both', q:'', grade:'', cls:'', size:400, page:1, per:12};
 function cvRows(skip){
   return DATA.filter(d => {
     if(skip !== 'type' && CV.type !== 'all' && cardType(d) !== CV.type) return false;
     if(skip !== 'grade' && CV.grade && d.grade !== CV.grade) return false;
     if(skip !== 'cls' && CV.cls && d.cls !== CV.cls) return false;
     if(CV.q && !matchesSearch(d, CV.q)) return false;
+    if(CV.onlySel && !SEL.has(pid(d))) return false;
     return true;
   });
 }
@@ -2471,11 +2487,16 @@ function renderCardsView(){
   grid.style.setProperty('--s', s);
   grid.style.gridTemplateColumns = `repeat(auto-fill,minmax(min(100%,${Math.round(w * sides.length + (sides.length - 1) * 12 + 30)}px),1fr))`;
   $('cvEmpty').style.display = rows.length ? 'none' : 'block';
-  grid.innerHTML = list.map(d => `<article class="idc-item"><div class="idc-head"><span class="dot" style="background:${THEMES[cardType(d)].a}"></span><b dir="auto">${escapeHtml(d.name)}</b><small>${escapeHtml(d.cls)}</small><button type="button" class="btn" data-edit="${d._i}">Customize</button></div><div class="idc-sides">${sides.map(sd => `<div class="idc-box" data-i="${d._i}" data-side="${sd}">${cardHTML(d, sd)}</div>`).join('')}</div></article>`).join('');
+  grid.innerHTML = list.map(d => `<article class="idc-item${SEL.has(pid(d)) ? ' picked' : ''}"><div class="idc-head"><input type="checkbox" class="idc-pick" data-pick="${escapeHtml(pid(d))}" title="Select for printing" ${SEL.has(pid(d)) ? 'checked' : ''}><span class="dot" style="background:${THEMES[cardType(d)].a}"></span><b dir="auto">${escapeHtml(d.name)}</b><small>${escapeHtml(d.cls)}</small><button type="button" class="btn" data-edit="${d._i}">Customize</button></div><div class="idc-sides">${sides.map(sd => `<div class="idc-box" data-i="${d._i}" data-side="${sd}">${cardHTML(d, sd)}</div>`).join('')}</div></article>`).join('');
   fitCards(grid);
   if(document.fonts && document.fonts.ready) document.fonts.ready.then(() => fitCards(grid));
   $('cvCount').textContent = rows.length ? `Showing ${fmt(start + 1)}–${fmt(start + list.length)} of ${fmt(rows.length)} students` : '';
+  updateSelUi();
   $('cvPager').innerHTML = `<button data-p="prev" ${CV.page <= 1 ? 'disabled' : ''}>Prev</button><span class="page-ind">${CV.page} / ${pages}</span><button data-p="next" ${CV.page >= pages ? 'disabled' : ''}>Next</button>`;
+}
+function updateSelUi(){
+  $('cvSelCount').textContent = SEL.size ? `${fmt(SEL.size)} student${SEL.size === 1 ? '' : 's'} selected for printing` : 'Tick the boxes on the cards to print only some students';
+  $('cvPrint').querySelector('.lbl').textContent = SEL.size ? `Print selected (${fmt(SEL.size)})` : 'Print cards (PDF)';
 }
 window.__cardsHook = () => { if(CV.active) renderCardsView(); };
 
@@ -2488,10 +2509,20 @@ $('cvPer').addEventListener('change', () => { CV.per = Number($('cvPer').value);
 $('cvSize').addEventListener('input', () => { CV.size = Number($('cvSize').value); renderCardsView(); });
 $('cvPager').addEventListener('click', e => { const b = e.target.closest('[data-p]'); if(!b || b.disabled) return; CV.page += b.dataset.p === 'next' ? 1 : -1; renderCardsView(); window.scrollTo({top:$('cardsView').offsetTop, behavior:'smooth'}); });
 $('cardsGrid').addEventListener('click', e => {
+  const pk = e.target.closest('.idc-pick');
+  if(pk){
+    if(pk.checked) SEL.add(pk.dataset.pick); else SEL.delete(pk.dataset.pick);
+    pk.closest('.idc-item').classList.toggle('picked', pk.checked); updateSelUi(); return;
+  }
   const eb = e.target.closest('[data-edit]'); if(eb){ openEditor(Number(eb.dataset.edit), 'front'); return; }
   const bx = e.target.closest('.idc-box'); if(bx) openEditor(Number(bx.dataset.i), bx.dataset.side);
 });
 window.addEventListener('resize', debounce(() => { if(CV.active) renderCardsView(); if(ED.open) renderPreview(); }, 150));
+
+$('cvOnlySel').addEventListener('change', () => { CV.onlySel = $('cvOnlySel').checked; CV.page = 1; renderCardsView(); });
+$('cvSelFiltered').addEventListener('click', () => { cvSorted().forEach(d => SEL.add(pid(d))); renderCardsView(); });
+$('cvSelPage').addEventListener('click', () => { cvSorted().slice((CV.page - 1) * CV.per, CV.page * CV.per).forEach(d => SEL.add(pid(d))); renderCardsView(); });
+$('cvSelClear').addEventListener('click', () => { SEL.clear(); renderCardsView(); });
 
 /* ---------- tabs ---------- */
 function setView(v){
@@ -2511,7 +2542,7 @@ const scaleNow = () => parseFloat($('ceBox').style.getPropertyValue('--s')) || 1
 function openEditor(i, side){
   if(!DATA[i]) return;
   ED.i = i; ED.side = side || 'front'; ED.type = cardType(DATA[i]);
-  ED.sel = ED.side === 'front' ? 'photo' : 'bus'; ED.open = true;
+  ED.sel = ED.side === 'front' ? 'pic' : 'bus'; ED.open = true;
   $('ceOverlay').classList.add('open'); $('ceModal').classList.add('open');
   renderEditor();
 }
@@ -2543,7 +2574,7 @@ function renderPanel(){
   h += `<div class="ce-sec"><h4>${EL_NAMES[ED.sel]} — position &amp; size</h4><div class="ce-grid">${['x', 'y', 'w', 'h'].map(k => numField(k, p[k])).join('')}</div>`;
   if(p.fs) h += `<label class="ce-f"><span>Font size · <b id="ceFsv">${p.fs}</b>px</span><input type="range" min="12" max="140" value="${p.fs}" data-k="fs"></label>`;
   h += `<label class="col-chk"><input type="checkbox" data-k="show" ${p.hidden ? '' : 'checked'}> Show on card</label></div>`;
-  if(ED.sel === 'photo' && ED.side === 'front'){
+  if(ED.sel === 'pic' && ED.side === 'front'){
     const a = PA[pid(d)] || {};
     h += `<div class="ce-sec"><h4>This student's photo</h4>
       <label class="ce-f"><span>Zoom · <b id="cePz">${(a.z || 1).toFixed(2)}</b>×</span><input type="range" min="1" max="3" step="0.05" value="${a.z || 1}" data-pa="z"></label>
@@ -2574,7 +2605,7 @@ $('ceTypes').addEventListener('click', e => {
   if(!inCV){ toast('No students in the ' + THEMES[t].label + ' group yet.'); return; }
   ED.type = t; ED.i = inCV._i; renderEditor();
 });
-$('ceSide').addEventListener('click', e => { const b = e.target.closest('[data-s]'); if(!b) return; ED.side = b.dataset.s; ED.sel = ED.side === 'front' ? 'photo' : 'bus'; renderEditor(); });
+$('ceSide').addEventListener('click', e => { const b = e.target.closest('[data-s]'); if(!b) return; ED.side = b.dataset.s; ED.sel = ED.side === 'front' ? 'pic' : 'bus'; renderEditor(); });
 $('ceStudent').addEventListener('change', () => { ED.i = Number($('ceStudent').value); renderPanel(); renderPreview(); });
 $('ceClose').addEventListener('click', closeEditor);
 $('ceDone').addEventListener('click', closeEditor);
@@ -2674,7 +2705,7 @@ $('cvImport').addEventListener('change', async e => {
 
 /* ---------- print ---------- */
 $('cvPrint').addEventListener('click', () => {
-  const rows = cvSorted();
+  const rows = SEL.size ? DATA.filter(d => SEL.has(pid(d))).sort((a, b) => gradeSort(a.grade, b.grade) || COLLATOR.compare(a.cls, b.cls) || COLLATOR.compare(a.name, b.name)) : cvSorted();
   if(!rows.length){ toast('No cards to print — no students match the filters.'); return; }
   const sides = CV.side === 'both' ? ['front', 'back'] : [CV.side];
   const cells = [];
