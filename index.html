@@ -2713,11 +2713,26 @@ $('cvImport').addEventListener('change', async e => {
 $('cvPrint').addEventListener('click', () => {
   const rows = SEL.size ? DATA.filter(d => SEL.has(pid(d))).sort((a, b) => gradeSort(a.grade, b.grade) || COLLATOR.compare(a.cls, b.cls) || COLLATOR.compare(a.name, b.name)) : cvSorted();
   if(!rows.length){ toast('No cards to print — no students match the filters.'); return; }
-  const sides = CV.side === 'both' ? ['front', 'back'] : [CV.side];
-  const cells = [];
-  rows.forEach(d => sides.forEach(sd => cells.push(`<div class="pc-cell">${cardHTML(d, sd)}</div>`)));
+  const cell = (d, sd) => d ? `<div class="pc-cell">${cardHTML(d, sd)}</div>` : '<div class="pc-cell" style="outline:none"></div>';
   const pages = [];
-  for(let i = 0; i < cells.length; i += 8) pages.push(`<div class="pc-page">${cells.slice(i, i + 8).join('')}</div>`);
+  if(CV.side === 'both'){
+    /* الوش في صفحة والظهر في الصفحة اللي بعدها — الظهر معكوس الأعمدة (يمين↔شمال)
+       عشان لما تطبع على الوجهين (قلب على الحافة الطويلة) كل ظهر يقع بالظبط ورا الوش بتاعه */
+    for(let i = 0; i < rows.length; i += 8){
+      const chunk = rows.slice(i, i + 8);
+      const fr = [], bk = [];
+      for(let j = 0; j < chunk.length; j += 2){
+        const a = chunk[j], b = chunk[j + 1] || null;
+        fr.push(cell(a, 'front'), cell(b, 'front'));
+        bk.push(cell(b, 'back'), cell(a, 'back'));   // عكس مكان العمودين
+      }
+      pages.push(`<div class="pc-page">${fr.join('')}</div>`);
+      pages.push(`<div class="pc-page">${bk.join('')}</div>`);
+    }
+  } else {
+    const cells = rows.map(d => cell(d, CV.side));
+    for(let i = 0; i < cells.length; i += 8) pages.push(`<div class="pc-page">${cells.slice(i, i + 8).join('')}</div>`);
+  }
   const area = $('cardsPrintArea');
   area.style.setProperty('--ps', ((94 / 25.4) * 96) / CW);
   area.innerHTML = pages.join('');
