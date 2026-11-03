@@ -581,7 +581,7 @@ body.view-cards main.wrap > :not(.tabs):not(#cardsView){display:none!important}
 .e-logo img{width:100%;height:100%;border-radius:50%;object-fit:cover;background:#fff;display:block;-webkit-user-drag:none}
 .e-frame,.e-pic{display:block}
 .idc-photo{position:relative;width:100%;height:100%;background:#fff;border:5px solid var(--ink);border-radius:170px 0 150px 36px}
-.idc-pin{position:absolute;inset:0;overflow:hidden;isolation:isolate;border-radius:0 0 110px 0;background:#ddd}
+.idc-pin{position:absolute;inset:0;overflow:hidden;isolation:isolate;border-radius:148px 0 128px 14px;background:#ddd}
 .idc-pin svg{position:absolute;inset:0;width:100%;height:100%}
 .idc-pz{position:absolute;inset:0;transform-origin:center}
 .idc-pz img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 12%;display:block;-webkit-user-drag:none}
@@ -1140,10 +1140,14 @@ const COLUMN_MAP = {
   courses:'الدورات', classera:'Classera', admission:'Admission',
   emergencyPhone:'رقم تليفون للطوارئ', motherPhone:'Update mother phone', fatherPhone:'update Father phone',
   address:'Update Datiles Address ',
+  fullName:'Full Name', supPhone:'رقم المشرفة', supName:'اسم المشرفة',
 };
 const OPTIONAL_ALIASES = {
   courses:   ['courses','course','الدورات','الدورات التدريبية'],
   classera:  ['classera','klasera','classera id','classera username','كلاسيرا','كلاسيرة'],
+  fullName:  ['full name','fullname','full_name','english name'],
+  supPhone:  ['رقم المشرفة','رقم المشرف','رقم تليفون المشرفة','رقم المشرفه'],
+  supName:   ['اسم المشرفة','اسم المشرف','اسم المشرفه'],
   admission: ['admission','admision','amision','admission no','admission number','admission id','رقم القبول','رقم الالتحاق'],
 };
 function normalizeHeader(s){
@@ -1210,7 +1214,7 @@ function prepRows(records){
     _courses: splitCourses(r.courses),
     _ids: [r.classera, r.admission].map(v => toWesternDigits(v).trim().toLowerCase()),
     _ph: PHONE_KEYS.map(k => normPhone(r[k])),
-    _hay: normAr([r.name, r.cls, r.grade, r.busLine, r.courses, r.classera, r.admission].join(' ')),
+    _hay: normAr([r.name, r.fullName, r.cls, r.grade, r.busLine, r.courses, r.classera, r.admission].join(' ')),
   }));
 }
 
@@ -2361,7 +2365,7 @@ const DEF = {
   }
 };
 const EL_NAMES = {frame:'Photo frame', pic:'Photo', logo:'Logo', brand:'School name', line:'Line', name:'Student name', cls:'Class', ph1:'Phone 1', ph2:'Phone 2', addr:'Address',
-  bus:'Bus number', supLabel:'Supervisor phone', supPill:'Supervisor label', supAddr:'Supervisor name / area'};
+  bus:'Bus number', supLabel:'Supervisor phone', supPill:'Supervisor name', supAddr:'Address'};
 
 function getL(type, side){
   const saved = CL[type + '.' + side] || {}, out = {};
@@ -2408,21 +2412,23 @@ function frontEls(d){
     logo:`<img src="${logoSrc()}" alt="">`,
     brand:BRAND,
     line:'<div class="idc-line"></div>',
-    name:`<span class="ft" dir="auto">${escapeHtml(d.name)}</span>`,
+    name:`<span class="ft" dir="auto">${escapeHtml(d.fullName || d.name)}</span>`,
     cls:`<div class="idc-pill"><span class="ic">${SVG_CAP}</span><span class="pl"><span class="ft">${escapeHtml(d.cls)}</span></span></div>`,
     ph1:phoneHtml(p1), ph2:phoneHtml(p2),
     addr:`<div class="idc-addr"><span class="hi">${SVG_HOUSE}</span><div class="ab"><span class="ft" dir="rtl">${escapeHtml(d.address || '-')}</span></div></div>`
   };
 }
 function backEls(d){
-  const n = busNo(d), s = n ? (SUP[n] || {}) : {};
+  const n = busNo(d), s = n ? (SUP[n] || {}) : {}, bus = d.bus === 'Yes';
+  const sp = bus ? (toWesternDigits(d.supPhone || '').trim() || s.phone || '') : '';
+  const sn = bus ? ((d.supName || '').trim() || s.text || '') : '';
   return {
     logo:`<img src="${logoSrc()}" alt="">`,
     brand:BRAND,
     bus:`<div class="idc-bus"><span class="rg"></span>${SVG_BUS}<span class="bn">${escapeHtml(n || '-')}</span></div>`,
-    supLabel:`<div class="idc-sl"><span class="ft"><b>Bus Supervisor /</b> <span class="n">${escapeHtml(s.phone || '-')}</span></span></div>`,
-    supPill:'<div class="idc-sp"><span class="ft">Supervisor Name</span></div>',
-    supAddr:`<div class="idc-sa"><span class="ft" dir="rtl">${escapeHtml(s.text || '-')}</span></div>`
+    supLabel:`<div class="idc-sl"><span class="ft"><b>Bus Supervisor /</b> <span class="n">${escapeHtml(sp || '-')}</span></span></div>`,
+    supPill:`<div class="idc-sp"><span class="ft" dir="auto">${escapeHtml(sn || 'Supervisor Name')}</span></div>`,
+    supAddr:`<div class="idc-sa"><span class="ft" dir="rtl">${escapeHtml(bus ? (d.address || '-') : '-')}</span></div>`
   };
 }
 function cardHTML(d, side, o){
@@ -2587,8 +2593,8 @@ function renderPanel(){
     if(n){
       const s = SUP[n] || {};
       h += `<div class="ce-sec"><h4>Bus ${escapeHtml(n)} supervisor</h4>
-        <label class="ce-f"><span>Phone</span><input type="text" data-sup="phone" value="${escapeHtml(s.phone || '')}" placeholder="e.g. 1127151463"></label>
-        <label class="ce-f"><span>Name / area (Arabic)</span><input type="text" dir="auto" data-sup="text" value="${escapeHtml(s.text || '')}"></label></div>`;
+        <label class="ce-f"><span>Phone (used only if the sheet is empty)</span><input type="text" data-sup="phone" value="${escapeHtml(s.phone || '')}" placeholder="e.g. 1127151463"></label>
+        <label class="ce-f"><span>Supervisor name (used only if the sheet is empty)</span><input type="text" dir="auto" data-sup="text" value="${escapeHtml(s.text || '')}"></label></div>`;
     } else h += `<div class="ce-sec"><p class="hint">This student isn't on a bus, so the back shows "-".</p></div>`;
   }
   h += `<div class="ce-acts"><button type="button" class="btn" id="ceApplyAll">Copy this ${ED.side} layout to all colours</button><button type="button" class="btn" id="ceReset">Reset this ${ED.side} layout (${THEMES[ED.type].label})</button></div>`;
