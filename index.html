@@ -525,6 +525,128 @@ table.t{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
   .rp-end span{display:inline-block;padding:4px 20px;border-radius:99px;background:#e8f3fa;border:1px dashed #6cc1ee;color:#00517c;font-size:.9em;font-weight:700}
 }
 </style>
+<style id="cardsCss">
+/* ===================== ID CARDS TAB ===================== */
+.tabs{display:flex;gap:6px;margin:18px 0 0;padding:5px;background:var(--surface);border:1px solid var(--line);border-radius:16px;width:fit-content;max-width:100%;box-shadow:var(--shadow-1)}
+.tab{border:0;background:transparent;padding:9px 18px;border-radius:12px;font-weight:700;font-size:13.5px;color:var(--ink-2);display:inline-flex;gap:8px;align-items:center;transition:all .3s var(--ease);white-space:nowrap}
+.tab:hover{color:var(--brand-2)}
+.tab.active{background:linear-gradient(135deg,var(--btn-a),var(--btn-b));color:#fff;box-shadow:0 8px 18px -8px rgba(0,81,124,.7)}
+.tab svg{width:17px;height:17px}
+#cardsView{display:none}
+body.view-cards #cardsView{display:block}
+body.view-cards main.wrap > :not(.tabs):not(#cardsView){display:none!important}
+
+.cv-types{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-top:6px}
+.cv-type{display:flex;align-items:center;gap:12px;text-align:left;padding:14px 16px;border-radius:18px;border:2px solid var(--line);background:var(--surface);box-shadow:var(--shadow-1);transition:all .3s var(--ease)}
+.cv-type:hover{transform:translateY(-3px);border-color:var(--line-2)}
+.cv-type .sw{width:42px;height:42px;border-radius:12px;flex:none;background:linear-gradient(135deg,var(--a),var(--b))}
+.cv-type b{display:block;font-size:14px}
+.cv-type small{color:var(--ink-2);font-size:11.5px}
+.cv-type .n{margin-left:auto;font-family:'Manrope',sans-serif;font-weight:800;font-size:22px}
+.cv-type.active{border-color:var(--brand-2);box-shadow:0 0 0 4px rgba(11,134,196,.16)}
+#cardsView .filter-panel{margin-top:14px}
+#cardsGrid{display:grid;gap:20px 18px;margin-top:18px;--s:.3}
+.idc-item{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:12px 14px 14px;box-shadow:var(--shadow-1);min-width:0}
+.idc-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:13px}
+.idc-head .dot{width:11px;height:11px;border-radius:50%;flex:none}
+.idc-head b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.idc-head small{color:var(--ink-3);font-weight:700;white-space:nowrap}
+.idc-head .btn{margin-left:auto;height:30px;padding:0 11px;font-size:12px;border-radius:9px}
+.idc-sides{display:flex;flex-wrap:wrap;gap:12px}
+.idc-box{position:relative;flex:none;width:calc(1400px * var(--s));height:calc(851px * var(--s));border-radius:calc(30px * var(--s));overflow:hidden;box-shadow:0 6px 20px -8px rgba(0,0,0,.4);cursor:pointer;background:#fff}
+.idc-box .idc{position:absolute;left:0;top:0;transform:scale(var(--s));transform-origin:0 0}
+.cv-foot{margin-top:16px;border:1px solid var(--line);border-radius:16px}
+
+/* ----- the card itself (design space 1400 x 851) ----- */
+.idc{width:1400px;height:851px;position:relative;overflow:hidden;background:#fff;color:var(--ink);font-family:'Manrope','Cairo',sans-serif;direction:ltr;line-height:1.2;user-select:none;border-radius:30px}
+.idc *{box-sizing:border-box}
+.idc-bg{position:absolute;inset:0;background:repeating-linear-gradient(135deg,#fff 0 110px,#f3f5f7 110px 220px)}
+.idc-bg::before,.idc-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(120deg,var(--a),var(--b))}
+.idc-front::before{clip-path:polygon(0 0,628px 0,535px 90px,90px 540px,0 640px)}
+.idc-front::after{clip-path:polygon(1400px 520px,1400px 851px,1040px 851px,1112px 776px,1255px 776px,1312px 700px,1346px 560px)}
+.idc-back::before{clip-path:polygon(35px 25px,297px 25px,248px 75px,140px 75px,85px 130px,85px 232px,35px 285px)}
+.idc-back::after{clip-path:polygon(1365px 826px,1103px 826px,1152px 776px,1260px 776px,1315px 721px,1315px 619px,1365px 566px)}
+.idc-el{position:absolute;display:flex;align-items:center}
+.idc-el.is-hidden{opacity:.28}
+.idc-el .ft{display:inline-block;white-space:nowrap;flex:none}
+.idc-rs{position:absolute;right:-12px;bottom:-12px;width:30px;height:30px;border-radius:50%;background:#0b86c4;border:4px solid #fff;cursor:nwse-resize;display:none;z-index:5}
+.idc.editing .idc-el{cursor:move;outline:2px dashed rgba(11,134,196,.5);touch-action:none}
+.idc.editing .idc-el.sel{outline:4px solid #0b86c4;z-index:4}
+.idc.editing .idc-el.sel .idc-rs{display:block}
+.e-logo img{width:100%;height:100%;border-radius:50%;object-fit:cover;background:#fff;display:block;-webkit-user-drag:none}
+.e-photo{display:block}
+.idc-photo{position:relative;width:100%;height:100%;background:#fff;border:5px solid var(--ink);border-radius:170px 0 150px 36px}
+.idc-pin{position:absolute;inset:22px;overflow:hidden;border-radius:0 0 110px 0;background:#ddd}
+.idc-pin svg{position:absolute;inset:0;width:100%;height:100%}
+.idc-pz{position:absolute;inset:0;transform-origin:center}
+.idc-pz img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;-webkit-user-drag:none}
+.idc-brand{width:100%;text-align:center}
+.idc-brand .b1{position:relative;display:inline-block;font-weight:800;color:#f7941d;line-height:.95;letter-spacing:.02em}
+.idc-brand .b1 svg{position:absolute;width:.42em;height:.42em;right:.1em;top:-.36em}
+.idc-brand .b2{font-size:.24em;color:#f7941d;letter-spacing:.05em;font-weight:600;margin-top:.45em}
+.idc-brand .b3{font-size:.3em;color:#14527d;font-weight:700;margin-top:.15em;white-space:nowrap}
+.idc-line{width:100%;height:100%;background:var(--ink)}
+.e-name{font-weight:700;color:var(--ink)}
+.idc-pill{position:relative;width:100%;height:100%;color:#fff;font-weight:700}
+.idc-pill .pl{position:absolute;left:11%;right:0;top:0;bottom:0;display:flex;align-items:center;justify-content:center;padding-left:6%;background:linear-gradient(90deg,var(--a),var(--b));border-radius:0 90px 0 0}
+.idc-pill .ic{position:absolute;left:0;top:-12%;height:124%;aspect-ratio:1.25/1;z-index:2}
+.idc-pill .ic svg{width:100%;height:100%;overflow:visible}
+.idc-ph{display:flex;align-items:stretch;width:100%;height:100%;color:var(--ink);font-weight:500}
+.idc-ph .pi{flex:none;height:100%;aspect-ratio:1.55/1;background:linear-gradient(90deg,var(--a),var(--b));border-radius:0 60px 0 0;display:grid;place-items:center}
+.idc-ph .pi svg{width:40%;height:60%}
+.idc-ph .pn{flex:1;min-width:0;display:flex;align-items:center;padding-left:.35em;direction:ltr}
+.idc-addr{display:flex;align-items:center;width:100%;height:100%}
+.idc-addr .hi{flex:none;height:100%;aspect-ratio:1;border-radius:50%;background:linear-gradient(135deg,var(--a),var(--b));display:grid;place-items:center;z-index:2}
+.idc-addr .hi svg{width:56%;height:56%}
+.idc-addr .ab{flex:1;min-width:0;height:86%;margin-left:-26px;padding:0 1.2em 0 2em;border:3px solid var(--ink);border-radius:0 50px 50px 0;display:flex;align-items:center;justify-content:center;font-family:'Cairo','Manrope',sans-serif;font-weight:700;color:var(--ink);background:#fff}
+.idc-bus{position:relative;width:100%;height:100%}
+.idc-bus .rg{position:absolute;right:0;top:9%;height:82%;width:62%;border-radius:999px;background:var(--b);border:7px solid #f7941d;box-shadow:inset 0 0 0 6px #fff}
+.idc-bus .bn{position:absolute;right:0;top:9%;height:82%;width:62%;display:grid;place-items:center;color:#fff;font-weight:800;padding-left:18%}
+.idc-bus svg{position:absolute;left:0;top:0;height:100%;width:49%}
+.idc-sl{width:100%;text-align:center;color:var(--ink)}
+.idc-sl b{font-weight:800}
+.idc-sl .n{font-weight:400}
+.idc-sp{width:100%;height:100%;display:grid;place-items:center;background:linear-gradient(90deg,var(--a),var(--b));border-radius:50px 80px 0 50px;color:#fff;font-weight:700}
+.idc-sa{width:100%;text-align:center;font-family:'Cairo','Manrope',sans-serif;font-weight:700;color:var(--ink);direction:rtl}
+
+/* ----- editor ----- */
+.ce-card{width:min(1260px,100%)}
+.ce-body{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:22px;padding:18px 24px;overflow:auto}
+@media (max-width:980px){.ce-body{grid-template-columns:1fr}}
+.ce-bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.ce-bar select{width:auto;min-width:200px;flex:1}
+.ce-t{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:99px;border:2px solid var(--line-2);background:var(--surface-2);font-weight:700;font-size:12.5px}
+.ce-t i{width:14px;height:14px;border-radius:50%;background:linear-gradient(135deg,var(--a),var(--b))}
+.ce-t.on{border-color:var(--brand-2);background:rgba(11,134,196,.1)}
+#ceStage{width:100%;background:repeating-conic-gradient(var(--surface-2) 0 25%,var(--surface-3) 0 50%) 0 0/22px 22px;border-radius:16px;padding:14px;display:flex;justify-content:center;border:1px solid var(--line)}
+#ceBox{cursor:default}
+.ce-sec{margin-bottom:18px}
+.ce-sec h4{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--ink-3);margin-bottom:10px;font-weight:800}
+.ce-chips{display:flex;flex-wrap:wrap;gap:6px}
+.ce-chip{border:1px solid var(--line-2);background:var(--surface);border-radius:99px;padding:5px 12px;font-size:12px;font-weight:700}
+.ce-chip.on{background:linear-gradient(135deg,var(--btn-a),var(--btn-b));color:#fff;border-color:transparent}
+.ce-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.ce-f{display:flex;flex-direction:column;gap:4px;font-size:11px;font-weight:700;color:var(--ink-2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.ce-f input[type=number]{height:38px;padding:0 10px;border-radius:10px;border:1px solid var(--line-2);background:var(--surface-2);width:100%}
+.ce-f input[type=range]{width:100%;accent-color:var(--brand-2)}
+.ce-acts{display:flex;flex-direction:column;gap:8px}
+.sup-row{display:grid;grid-template-columns:90px 1fr 1fr;gap:10px;align-items:center;margin-bottom:10px}
+.sup-row small{color:var(--ink-3);display:block;font-size:11px}
+@media (max-width:760px){.sup-row{grid-template-columns:1fr}}
+
+/* ----- printing cards ----- */
+#cardsPrintArea{position:absolute;left:-30000px;top:0;width:210mm}
+.pc-page{width:210mm;height:296mm;padding:8mm;display:grid;grid-template-columns:repeat(2,94mm);grid-auto-rows:57.2mm;gap:4mm;justify-content:center;align-content:start;box-sizing:border-box;break-after:page;page-break-after:always;overflow:hidden}
+.pc-page:last-child{break-after:auto;page-break-after:auto}
+.pc-cell{position:relative;width:94mm;height:57.2mm;overflow:hidden;border-radius:2mm;outline:.2mm dashed #c4ccd3}
+.pc-cell .idc{position:absolute;left:0;top:0;transform:scale(var(--ps));transform-origin:0 0}
+@media print{
+  body:not(.pc) #cardsPrintArea{display:none!important}
+  body.pc #cardsPrintArea{position:static;display:block!important;width:auto}
+  body.pc #reportPrintArea{display:none!important}
+  body.pc #cardsView,body.pc .tabs{display:none!important}
+}
+</style>
 </head>
 <body>
 
@@ -568,6 +690,10 @@ table.t{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
 </header>
 
 <main class="wrap">
+  <nav class="tabs" id="mainTabs">
+    <button type="button" class="tab active" data-view="dash"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Dashboard</button>
+    <button type="button" class="tab" data-view="cards"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2.5"/><circle cx="8.5" cy="11" r="2.2"/><path d="M5 16c.6-1.8 2-2.6 3.5-2.6S11.4 14.2 12 16M14.5 9.5h5M14.5 13h4"/></svg>ID Cards</button>
+  </nav>
 
   <section class="hero" id="hero">
     <span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span>
@@ -704,6 +830,41 @@ table.t{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
     </div>
   </div>
 
+  <section id="cardsView">
+    <div class="section-head" style="margin-top:28px">
+      <div>
+        <h2>Student ID cards</h2>
+        <p>Four colour templates picked automatically from the bus subscription and the stage. Click any card to customize it.</p>
+      </div>
+      <div class="head-actions">
+        <button class="btn" id="cvSup" type="button"><span class="lbl">Bus supervisors</span></button>
+        <button class="btn" id="cvCustom" type="button"><span class="lbl">Customize layout</span></button>
+        <button class="btn" id="cvExport" type="button"><span class="lbl">Export settings</span></button>
+        <button class="btn" id="cvImportBtn" type="button"><span class="lbl">Import settings</span></button>
+        <button class="btn btn-primary" id="cvPrint" type="button"><span class="lbl">Print cards (PDF)</span></button>
+        <input type="file" id="cvImport" accept=".json,application/json" hidden>
+      </div>
+    </div>
+    <div class="cv-types" id="cvTypes"></div>
+    <div class="filter-panel">
+      <div class="field search">
+        <label for="cvSearch">Search</label>
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input type="text" id="cvSearch" autocomplete="off" placeholder="اسم الطالب، الفصل، التليفون، الباص...">
+        </div>
+      </div>
+      <div class="field"><label for="cvGrade">Grade</label><select id="cvGrade"></select></div>
+      <div class="field"><label for="cvClass">Class</label><select id="cvClass"></select></div>
+      <div class="field"><label for="cvSide">Show</label><select id="cvSide"><option value="both">Front + Back</option><option value="front">Front only</option><option value="back">Back only</option></select></div>
+      <div class="field"><label for="cvPer">Students per page</label><select id="cvPer"><option>6</option><option selected>12</option><option>24</option><option>48</option></select></div>
+      <div class="field"><label for="cvSize">Preview size</label><input type="range" id="cvSize" min="240" max="720" value="400"></div>
+    </div>
+    <div id="cvEmpty" class="empty-state" style="margin-top:18px"><strong>No cards match these filters</strong>Try clearing a filter or the search.</div>
+    <div id="cardsGrid"></div>
+    <div class="table-footer cv-foot"><span id="cvCount"></span><div class="pager" id="cvPager"></div></div>
+  </section>
+
   <footer class="foot">Student Insights Dashboard · Prepared by Mohamed Abdelfattah</footer>
 </main>
 </div>
@@ -780,6 +941,39 @@ table.t{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
 </div>
 
 <div id="reportPrintArea"></div>
+<div id="cardsPrintArea"></div>
+
+<!-- Card customizer -->
+<div class="overlay" id="ceOverlay"></div>
+<div class="modal" id="ceModal">
+  <div class="modal-card ce-card">
+    <div class="modal-head"><h3>Customize ID card</h3><button class="x-btn" id="ceClose" type="button" aria-label="Close">✕</button></div>
+    <div class="ce-body">
+      <div class="ce-left">
+        <div class="ce-bar">
+          <div id="ceTypes" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+          <div class="mode-toggle" id="ceSide"><button type="button" data-s="front" class="active">Front</button><button type="button" data-s="back">Back</button></div>
+        </div>
+        <div class="ce-bar"><select id="ceStudent" aria-label="Preview student"></select></div>
+        <div id="ceStage"><div class="idc-box" id="ceBox"><div id="ceHost"></div></div></div>
+        <p class="hint" style="margin-top:12px">Drag any item to move it · drag the blue dot to resize it · or use the controls on the right. Changes apply to every card of the same colour.</p>
+      </div>
+      <div class="ce-right" id="cePanel"></div>
+    </div>
+    <div class="modal-foot"><div class="cnt">Saved automatically in this browser.</div><div class="btns"><button class="btn btn-primary" id="ceDone" type="button">Done</button></div></div>
+  </div>
+</div>
+
+<!-- Bus supervisors -->
+<div class="overlay" id="supOverlay"></div>
+<div class="modal" id="supModal">
+  <div class="modal-card">
+    <div class="modal-head"><h3>Bus supervisors (shown on the back of the card)</h3><button class="x-btn" id="supClose" type="button" aria-label="Close">✕</button></div>
+    <div class="modal-body" id="supBody"></div>
+    <div class="modal-foot"><div class="cnt">Saved automatically in this browser.</div><div class="btns"><button class="btn btn-primary" id="supDone" type="button">Done</button></div></div>
+  </div>
+</div>
+
 <div id="toast" role="status" aria-live="polite"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" async onload="window.__chartReady&&window.__chartReady()" onerror="window.__chartFail&&window.__chartFail()"></script>
@@ -1253,6 +1447,7 @@ function render(){
   try{ renderChips(ff); }catch(e){ console.error('chips', e); }
   try{ renderTable(true); }catch(e){ console.error('table', e); }
   updateHeroText(ff);
+  if(window.__cardsHook) window.__cardsHook();
 }
 
 function activeCount(f){ return Object.values(f).filter(Boolean).length; }
@@ -2109,6 +2304,408 @@ function initToggles(){
   // لو الشبكة بطيئة جدًا ومفيش كاش، الشاشة الافتتاحية بتفضل موجودة مع رسالة واضحة
 })();
 
+</script>
+<script>
+/* =====================================================================
+   ID Cards tab — 4 colour templates, per-colour customizable layout
+   (settings live in this browser's localStorage; use Export/Import to move them)
+   ===================================================================== */
+(function(){
+'use strict';
+const CW = 1400, CH = 851;
+const LS_L = 'sid_card_layout_v1', LS_P = 'sid_card_photo_v1', LS_S = 'sid_card_sup_v1';
+const ld = (k) => { try{ return JSON.parse(localStorage.getItem(k)) || {}; }catch(e){ return {}; } };
+const sv = (k, v) => { try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){ toast('Could not save settings in this browser', 4000); } };
+let CL = ld(LS_L), PA = ld(LS_P), SUP = ld(LS_S);
+
+const THEMES = {
+  green:  {label:'Green',  sub:'Bus · KG + Secondary',       a:'#1d8573', b:'#0b3d20', ink:'#145a31'},
+  yellow: {label:'Yellow', sub:'No bus · KG + Secondary',    a:'#f89d22', b:'#c96e2e', ink:'#16507a'},
+  red:    {label:'Red',    sub:'No bus · Prep + Primary',    a:'#a3202f', b:'#4c1017', ink:'#7a1620'},
+  blue:   {label:'Blue',   sub:'Bus · Prep + Primary',       a:'#10688f', b:'#0d4e75', ink:'#12597f'},
+};
+const TYPES = ['green','yellow','red','blue'];
+
+const DEF = {
+  front:{
+    photo:{x:68,y:62,w:496,h:498},
+    logo:{x:697,y:33,w:203,h:203},
+    brand:{x:935,y:78,w:320,h:165,fs:84},
+    line:{x:805,y:256,w:402,h:5},
+    name:{x:582,y:298,w:800,h:72,fs:46},
+    cls:{x:648,y:440,w:572,h:86,fs:46},
+    ph1:{x:188,y:573,w:450,h:64,fs:50},
+    ph2:{x:805,y:573,w:490,h:64,fs:50},
+    addr:{x:72,y:664,w:1200,h:106,fs:36}
+  },
+  back:{
+    logo:{x:445,y:72,w:195,h:195},
+    brand:{x:672,y:105,w:320,h:165,fs:84},
+    bus:{x:628,y:284,w:225,h:132,fs:56},
+    supLabel:{x:300,y:428,w:800,h:66,fs:42},
+    supPill:{x:432,y:514,w:540,h:68,fs:40},
+    supAddr:{x:250,y:594,w:900,h:72,fs:40}
+  }
+};
+const EL_NAMES = {photo:'Photo', logo:'Logo', brand:'School name', line:'Line', name:'Student name', cls:'Class', ph1:'Phone 1', ph2:'Phone 2', addr:'Address',
+  bus:'Bus number', supLabel:'Supervisor phone', supPill:'Supervisor label', supAddr:'Supervisor name / area'};
+
+function getL(type, side){
+  const saved = CL[type + '.' + side] || {}, out = {};
+  for(const id in DEF[side]) out[id] = Object.assign({}, DEF[side][id], saved[id] || {});
+  return out;
+}
+function saveEl(type, side, id, p){ const k = type + '.' + side; (CL[k] = CL[k] || {})[id] = Object.assign({}, p); sv(LS_L, CL); }
+
+/* ---------- student helpers ---------- */
+function cardType(d){
+  const s = String(d.stage || '').toLowerCase(), g = String(d.grade || '').toLowerCase();
+  let ks;
+  if(s) ks = s.includes('kg') || s.includes('secondary');
+  else ks = /kg|baby|sec/.test(g);
+  const bus = d.bus === 'Yes';
+  return ks ? (bus ? 'green' : 'yellow') : (bus ? 'blue' : 'red');
+}
+const busNo = (d) => (d.bus === 'Yes' && d.busLine && d.busLine !== 'Not Assigned') ? d.busLine : '';
+const pid = (d) => admissionId(d) || ('n:' + d.name);
+function phonesOf(d){
+  const a = [d.motherPhone, d.fatherPhone, d.emergencyPhone].filter(v => v && normPhone(v));
+  return [a[0] || '', a[1] || ''];
+}
+
+/* ---------- card markup ---------- */
+const SVG_PHONE = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>';
+const SVG_HOUSE = '<svg viewBox="0 0 24 24" fill="#fff"><path d="M12 3 2 12h3v8h5v-6h4v6h5v-8h3z"/></svg>';
+const SVG_CAP = '<svg viewBox="0 0 100 80"><ellipse cx="50" cy="42" rx="46" ry="30" fill="none" stroke="#f7941d" stroke-width="7" transform="rotate(-18 50 42)"/><ellipse cx="50" cy="42" rx="38" ry="24" style="fill:var(--a)" transform="rotate(-18 50 42)"/><path d="M50 22 78 34 50 46 22 34z" fill="#fff"/><path d="M34 41v10c0 5 32 5 32 0V41l-16 7z" fill="#fff"/><path d="M78 34v15" stroke="#fff" stroke-width="3"/></svg>';
+const SVG_SUN = '<svg viewBox="0 0 24 24" fill="none" stroke="#f7941d" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="13" r="4.5"/><path d="M12 3v2.5M4.5 6.5 6.3 8.3M19.5 6.5 17.7 8.3M2.5 13H5M19 13h2.5"/></svg>';
+const SVG_BUS = '<svg viewBox="0 0 110 132" preserveAspectRatio="xMinYMid meet"><rect x="2" y="30" width="10" height="22" rx="3" fill="#9aa5b8"/><rect x="98" y="30" width="10" height="22" rx="3" fill="#9aa5b8"/><rect x="14" y="2" width="82" height="102" rx="12" fill="#f8a132"/><rect x="22" y="10" width="66" height="46" rx="6" fill="#4cb8ea" stroke="#1d5c85" stroke-width="3"/><path d="M28 12h14L26 54h-4z" fill="#fff" opacity=".4"/><circle cx="26" cy="74" r="9" fill="#7fd4f5" stroke="#1d5c85" stroke-width="3"/><circle cx="84" cy="74" r="9" fill="#7fd4f5" stroke="#1d5c85" stroke-width="3"/><rect x="40" y="64" width="30" height="34" rx="3" fill="#1d5c85"/><path d="M45 68v26M51 68v26M57 68v26M63 68v26" stroke="#4b8fb8" stroke-width="2"/><rect x="10" y="100" width="90" height="12" rx="4" fill="#26435a"/><rect x="20" y="112" width="16" height="18" rx="3" fill="#1d3f58"/><rect x="74" y="112" width="16" height="18" rx="3" fill="#1d3f58"/></svg>';
+const PH_SVG = '<svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice"><rect width="100" height="100" fill="#a8a8a8"/><circle cx="50" cy="38" r="20" fill="#f0f0f0"/><path d="M10 100c0-27 17-40 40-40s40 13 40 40z" fill="#f0f0f0"/></svg>';
+const BRAND = `<div class="idc-brand"><div class="b1">SMART${SVG_SUN}</div><div class="b2">NATIONAL SCHOOL</div><div class="b3">(Language- Arabic)</div></div>`;
+const logoSrc = () => $('brandLogo').src;
+
+function phoneHtml(v){
+  return v ? `<div class="idc-ph"><span class="pi">${SVG_PHONE}</span><span class="pn"><span class="ft">${escapeHtml(v)}</span></span></div>` : '';
+}
+function frontEls(d){
+  const a = PA[pid(d)] || {}, z = a.z || 1, ox = a.x || 0, oy = a.y || 0;
+  const [p1, p2] = phonesOf(d);
+  return {
+    photo:`<div class="idc-photo"><div class="idc-pin">${PH_SVG}<div class="idc-pz" style="transform:translate(${ox}%,${oy}%) scale(${z})">${photoImgHtml(d, 'idc-img', true)}</div></div></div>`,
+    logo:`<img src="${logoSrc()}" alt="">`,
+    brand:BRAND,
+    line:'<div class="idc-line"></div>',
+    name:`<span class="ft" dir="auto">${escapeHtml(d.name)}</span>`,
+    cls:`<div class="idc-pill"><span class="ic">${SVG_CAP}</span><span class="pl"><span class="ft">${escapeHtml(d.cls)}</span></span></div>`,
+    ph1:phoneHtml(p1), ph2:phoneHtml(p2),
+    addr:`<div class="idc-addr"><span class="hi">${SVG_HOUSE}</span><div class="ab"><span class="ft" dir="rtl">${escapeHtml(d.address || '-')}</span></div></div>`
+  };
+}
+function backEls(d){
+  const n = busNo(d), s = n ? (SUP[n] || {}) : {};
+  return {
+    logo:`<img src="${logoSrc()}" alt="">`,
+    brand:BRAND,
+    bus:`<div class="idc-bus"><span class="rg"></span>${SVG_BUS}<span class="bn">${escapeHtml(n || '-')}</span></div>`,
+    supLabel:`<div class="idc-sl"><span class="ft"><b>Bus Supervisor /</b> <span class="n">${escapeHtml(s.phone || '-')}</span></span></div>`,
+    supPill:'<div class="idc-sp"><span class="ft">Supervisor Name</span></div>',
+    supAddr:`<div class="idc-sa"><span class="ft" dir="rtl">${escapeHtml(s.text || '-')}</span></div>`
+  };
+}
+function cardHTML(d, side, o){
+  o = o || {};
+  const type = cardType(d), th = THEMES[type], L = getL(type, side);
+  const els = side === 'front' ? frontEls(d) : backEls(d);
+  let html = '';
+  for(const id in els){
+    const p = L[id]; if(!p) continue;
+    if(p.hidden && !o.edit) continue;
+    html += `<div class="idc-el e-${id}${p.hidden ? ' is-hidden' : ''}${o.sel === id ? ' sel' : ''}" data-el="${id}" style="left:${p.x}px;top:${p.y}px;width:${p.w}px;height:${p.h}px;${p.fs ? 'font-size:' + p.fs + 'px;' : ''}">${els[id]}${o.edit ? '<i class="idc-rs"></i>' : ''}</div>`;
+  }
+  return `<div class="idc t-${type}${o.edit ? ' editing' : ''}" style="--a:${th.a};--b:${th.b};--ink:${th.ink}"><div class="idc-bg idc-${side}"></div>${html}</div>`;
+}
+// shrink long texts so they never overflow their box
+function fitCards(root){
+  root.querySelectorAll('.idc-el').forEach(el => {
+    const ft = el.querySelector('.ft'); if(!ft) return;
+    const box = ft.parentElement, cs = getComputedStyle(box);
+    const avail = box.clientWidth - parseFloat(cs.paddingLeft || 0) - parseFloat(cs.paddingRight || 0);
+    if(!(avail > 0)) return;
+    let fs = parseFloat(el.style.fontSize) || parseFloat(getComputedStyle(el).fontSize), n = 0;
+    while(ft.offsetWidth > avail && fs > 10 && n++ < 60){ fs -= 2; el.style.fontSize = fs + 'px'; }
+  });
+}
+
+/* ---------- cards view ---------- */
+const CV = {active:false, type:'all', side:'both', q:'', grade:'', cls:'', size:400, page:1, per:12};
+function cvRows(skip){
+  return DATA.filter(d => {
+    if(skip !== 'type' && CV.type !== 'all' && cardType(d) !== CV.type) return false;
+    if(skip !== 'grade' && CV.grade && d.grade !== CV.grade) return false;
+    if(skip !== 'cls' && CV.cls && d.cls !== CV.cls) return false;
+    if(CV.q && !matchesSearch(d, CV.q)) return false;
+    return true;
+  });
+}
+const cvSorted = () => cvRows().sort((a, b) => gradeSort(a.grade, b.grade) || COLLATOR.compare(a.cls, b.cls) || COLLATOR.compare(a.name, b.name));
+
+function renderCardsView(){
+  if(!DATA.length) return;
+  const base = cvRows('type'), cnt = {green:0, yellow:0, red:0, blue:0};
+  base.forEach(d => cnt[cardType(d)]++);
+  $('cvTypes').innerHTML =
+    `<button type="button" class="cv-type${CV.type === 'all' ? ' active' : ''}" data-t="all" style="--a:#0b86c4;--b:#00517c"><span class="sw"></span><div><b>All cards</b><small>Every student</small></div><span class="n">${fmt(base.length)}</span></button>` +
+    TYPES.map(t => `<button type="button" class="cv-type${CV.type === t ? ' active' : ''}" data-t="${t}" style="--a:${THEMES[t].a};--b:${THEMES[t].b}"><span class="sw"></span><div><b>${THEMES[t].label}</b><small>${THEMES[t].sub}</small></div><span class="n">${fmt(cnt[t])}</span></button>`).join('');
+
+  fillSelect('cvGrade', uniqueSorted(cvRows('grade').map(d => d.grade)).sort(gradeSort), 'All grades');
+  CV.grade = $('cvGrade').value;
+  fillSelect('cvClass', uniqueSorted(cvRows('cls').map(d => d.cls)), 'All classes');
+  CV.cls = $('cvClass').value;
+
+  const rows = cvSorted(), pages = Math.max(1, Math.ceil(rows.length / CV.per));
+  if(CV.page > pages) CV.page = pages;
+  const start = (CV.page - 1) * CV.per, list = rows.slice(start, start + CV.per);
+  const sides = CV.side === 'both' ? ['front', 'back'] : [CV.side];
+  const grid = $('cardsGrid');
+  const avail = Math.max(240, grid.clientWidth - 36);
+  const w = Math.min(CV.size, avail), s = w / CW;
+  grid.style.setProperty('--s', s);
+  grid.style.gridTemplateColumns = `repeat(auto-fill,minmax(min(100%,${Math.round(w * sides.length + (sides.length - 1) * 12 + 30)}px),1fr))`;
+  $('cvEmpty').style.display = rows.length ? 'none' : 'block';
+  grid.innerHTML = list.map(d => `<article class="idc-item"><div class="idc-head"><span class="dot" style="background:${THEMES[cardType(d)].a}"></span><b dir="auto">${escapeHtml(d.name)}</b><small>${escapeHtml(d.cls)}</small><button type="button" class="btn" data-edit="${d._i}">Customize</button></div><div class="idc-sides">${sides.map(sd => `<div class="idc-box" data-i="${d._i}" data-side="${sd}">${cardHTML(d, sd)}</div>`).join('')}</div></article>`).join('');
+  fitCards(grid);
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(() => fitCards(grid));
+  $('cvCount').textContent = rows.length ? `Showing ${fmt(start + 1)}–${fmt(start + list.length)} of ${fmt(rows.length)} students` : '';
+  $('cvPager').innerHTML = `<button data-p="prev" ${CV.page <= 1 ? 'disabled' : ''}>Prev</button><span class="page-ind">${CV.page} / ${pages}</span><button data-p="next" ${CV.page >= pages ? 'disabled' : ''}>Next</button>`;
+}
+window.__cardsHook = () => { if(CV.active) renderCardsView(); };
+
+$('cvTypes').addEventListener('click', e => { const b = e.target.closest('[data-t]'); if(!b) return; CV.type = b.dataset.t; CV.page = 1; renderCardsView(); });
+$('cvSearch').addEventListener('input', debounce(() => { CV.q = $('cvSearch').value.trim(); CV.page = 1; renderCardsView(); }, 150));
+$('cvGrade').addEventListener('change', () => { CV.grade = $('cvGrade').value; CV.page = 1; renderCardsView(); });
+$('cvClass').addEventListener('change', () => { CV.cls = $('cvClass').value; CV.page = 1; renderCardsView(); });
+$('cvSide').addEventListener('change', () => { CV.side = $('cvSide').value; renderCardsView(); });
+$('cvPer').addEventListener('change', () => { CV.per = Number($('cvPer').value); CV.page = 1; renderCardsView(); });
+$('cvSize').addEventListener('input', () => { CV.size = Number($('cvSize').value); renderCardsView(); });
+$('cvPager').addEventListener('click', e => { const b = e.target.closest('[data-p]'); if(!b || b.disabled) return; CV.page += b.dataset.p === 'next' ? 1 : -1; renderCardsView(); window.scrollTo({top:$('cardsView').offsetTop, behavior:'smooth'}); });
+$('cardsGrid').addEventListener('click', e => {
+  const eb = e.target.closest('[data-edit]'); if(eb){ openEditor(Number(eb.dataset.edit), 'front'); return; }
+  const bx = e.target.closest('.idc-box'); if(bx) openEditor(Number(bx.dataset.i), bx.dataset.side);
+});
+window.addEventListener('resize', debounce(() => { if(CV.active) renderCardsView(); if(ED.open) renderPreview(); }, 150));
+
+/* ---------- tabs ---------- */
+function setView(v){
+  CV.active = v === 'cards';
+  document.body.classList.toggle('view-cards', CV.active);
+  document.querySelectorAll('#mainTabs .tab').forEach(b => b.classList.toggle('active', b.dataset.view === v));
+  if(CV.active){ renderCardsView(); window.scrollTo({top:0}); }
+  else { requestAnimationFrame(() => { placeIndicators(); Object.values(charts).forEach(c => { try{ c.resize(); }catch(e){} }); }); }
+  try{ history.replaceState(null, '', v === 'cards' ? '#cards' : location.pathname + location.search); }catch(e){}
+}
+document.querySelectorAll('#mainTabs .tab').forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
+
+/* ---------- editor ---------- */
+const ED = {open:false, i:-1, side:'front', type:'green', sel:'photo'};
+const scaleNow = () => parseFloat($('ceBox').style.getPropertyValue('--s')) || 1;
+
+function openEditor(i, side){
+  if(!DATA[i]) return;
+  ED.i = i; ED.side = side || 'front'; ED.type = cardType(DATA[i]);
+  ED.sel = ED.side === 'front' ? 'photo' : 'bus'; ED.open = true;
+  $('ceOverlay').classList.add('open'); $('ceModal').classList.add('open');
+  renderEditor();
+}
+function closeEditor(){ ED.open = false; $('ceOverlay').classList.remove('open'); $('ceModal').classList.remove('open'); if(CV.active) renderCardsView(); }
+function renderEditor(){
+  const cnt = {green:0, yellow:0, red:0, blue:0}; DATA.forEach(d => cnt[cardType(d)]++);
+  $('ceTypes').innerHTML = TYPES.map(t => `<button type="button" class="ce-t${ED.type === t ? ' on' : ''}" data-t="${t}" style="--a:${THEMES[t].a};--b:${THEMES[t].b}"><i></i>${THEMES[t].label} (${cnt[t]})</button>`).join('');
+  document.querySelectorAll('#ceSide button').forEach(b => b.classList.toggle('active', b.dataset.s === ED.side));
+  const list = DATA.filter(x => cardType(x) === ED.type).sort((a, b) => gradeSort(a.grade, b.grade) || COLLATOR.compare(a.cls, b.cls) || COLLATOR.compare(a.name, b.name)).slice(0, 600);
+  $('ceStudent').innerHTML = list.map(x => `<option value="${x._i}">${escapeHtml(x.name)} — ${escapeHtml(x.cls)}</option>`).join('');
+  $('ceStudent').value = String(ED.i);
+  renderPanel();
+  requestAnimationFrame(renderPreview);
+}
+function renderPreview(){
+  const d = DATA[ED.i]; if(!d || !ED.open) return;
+  const st = $('ceStage'), s = Math.min(1, Math.max(.2, ((st.clientWidth || 720) - 30) / CW));
+  $('ceBox').style.setProperty('--s', s);
+  $('ceHost').innerHTML = cardHTML(d, ED.side, {edit:true, sel:ED.sel});
+  fitCards($('ceBox'));
+}
+function numField(k, v){ return `<label class="ce-f"><span>${k.toUpperCase()}</span><input type="number" data-k="${k}" value="${v}"></label>`; }
+function renderPanel(){
+  const d = DATA[ED.i]; if(!d) return;
+  const L = getL(ED.type, ED.side);
+  if(!L[ED.sel]) ED.sel = Object.keys(L)[0];
+  const p = L[ED.sel];
+  let h = `<div class="ce-sec"><h4>Elements</h4><div class="ce-chips">${Object.keys(L).map(id => `<button type="button" class="ce-chip${id === ED.sel ? ' on' : ''}" data-el="${id}">${EL_NAMES[id]}</button>`).join('')}</div></div>`;
+  h += `<div class="ce-sec"><h4>${EL_NAMES[ED.sel]} — position &amp; size</h4><div class="ce-grid">${['x', 'y', 'w', 'h'].map(k => numField(k, p[k])).join('')}</div>`;
+  if(p.fs) h += `<label class="ce-f"><span>Font size · <b id="ceFsv">${p.fs}</b>px</span><input type="range" min="12" max="140" value="${p.fs}" data-k="fs"></label>`;
+  h += `<label class="col-chk"><input type="checkbox" data-k="show" ${p.hidden ? '' : 'checked'}> Show on card</label></div>`;
+  if(ED.sel === 'photo' && ED.side === 'front'){
+    const a = PA[pid(d)] || {};
+    h += `<div class="ce-sec"><h4>This student's photo</h4>
+      <label class="ce-f"><span>Zoom · <b id="cePz">${(a.z || 1).toFixed(2)}</b>×</span><input type="range" min="1" max="3" step="0.05" value="${a.z || 1}" data-pa="z"></label>
+      <label class="ce-f"><span>Move left / right · <b id="cePx">${a.x || 0}</b>%</span><input type="range" min="-50" max="50" step="1" value="${a.x || 0}" data-pa="x"></label>
+      <label class="ce-f"><span>Move up / down · <b id="cePy">${a.y || 0}</b>%</span><input type="range" min="-50" max="50" step="1" value="${a.y || 0}" data-pa="y"></label>
+      <button type="button" class="btn" id="cePhotoReset">Reset this photo</button></div>`;
+  }
+  const n = busNo(d);
+  if(ED.side === 'back'){
+    if(n){
+      const s = SUP[n] || {};
+      h += `<div class="ce-sec"><h4>Bus ${escapeHtml(n)} supervisor</h4>
+        <label class="ce-f"><span>Phone</span><input type="text" data-sup="phone" value="${escapeHtml(s.phone || '')}" placeholder="e.g. 1127151463"></label>
+        <label class="ce-f"><span>Name / area (Arabic)</span><input type="text" dir="auto" data-sup="text" value="${escapeHtml(s.text || '')}"></label></div>`;
+    } else h += `<div class="ce-sec"><p class="hint">This student isn't on a bus, so the back shows "-".</p></div>`;
+  }
+  h += `<div class="ce-acts"><button type="button" class="btn" id="ceApplyAll">Copy this ${ED.side} layout to all colours</button><button type="button" class="btn" id="ceReset">Reset this ${ED.side} layout (${THEMES[ED.type].label})</button></div>`;
+  $('cePanel').innerHTML = h;
+}
+function pickEl(id){
+  ED.sel = id;
+  $('ceBox').querySelectorAll('.idc-el').forEach(x => x.classList.toggle('sel', x.dataset.el === id));
+  renderPanel();
+}
+$('ceTypes').addEventListener('click', e => {
+  const b = e.target.closest('[data-t]'); if(!b) return;
+  const t = b.dataset.t, inCV = cvRows().find(d => cardType(d) === t) || DATA.find(d => cardType(d) === t);
+  if(!inCV){ toast('No students in the ' + THEMES[t].label + ' group yet.'); return; }
+  ED.type = t; ED.i = inCV._i; renderEditor();
+});
+$('ceSide').addEventListener('click', e => { const b = e.target.closest('[data-s]'); if(!b) return; ED.side = b.dataset.s; ED.sel = ED.side === 'front' ? 'photo' : 'bus'; renderEditor(); });
+$('ceStudent').addEventListener('change', () => { ED.i = Number($('ceStudent').value); renderPanel(); renderPreview(); });
+$('ceClose').addEventListener('click', closeEditor);
+$('ceDone').addEventListener('click', closeEditor);
+$('ceOverlay').addEventListener('click', closeEditor);
+$('ceModal').addEventListener('click', e => { if(e.target.id === 'ceModal') closeEditor(); });
+
+$('cePanel').addEventListener('click', e => {
+  const c = e.target.closest('[data-el]'); if(c){ pickEl(c.dataset.el); renderPreview(); return; }
+  if(e.target.id === 'cePhotoReset'){ delete PA[pid(DATA[ED.i])]; sv(LS_P, PA); renderPanel(); renderPreview(); }
+  if(e.target.id === 'ceReset'){ delete CL[ED.type + '.' + ED.side]; sv(LS_L, CL); renderPanel(); renderPreview(); toast('Layout reset.'); }
+  if(e.target.id === 'ceApplyAll'){
+    const src = CL[ED.type + '.' + ED.side] || {};
+    TYPES.forEach(t => { if(t !== ED.type) CL[t + '.' + ED.side] = JSON.parse(JSON.stringify(src)); });
+    sv(LS_L, CL); toast('Layout copied to all colours.');
+  }
+});
+$('cePanel').addEventListener('input', e => {
+  const t = e.target, d = DATA[ED.i];
+  if(t.dataset.k){
+    const p = getL(ED.type, ED.side)[ED.sel];
+    if(t.dataset.k === 'show') p.hidden = !t.checked;
+    else { if(t.value === '') return; p[t.dataset.k] = Number(t.value); }
+    if(t.dataset.k === 'fs'){ const o = $('ceFsv'); if(o) o.textContent = t.value; }
+    saveEl(ED.type, ED.side, ED.sel, p); renderPreview();
+  } else if(t.dataset.pa){
+    const k = pid(d), a = PA[k] = PA[k] || {};
+    a[t.dataset.pa] = Number(t.value); sv(LS_P, PA);
+    const lab = {z:'cePz', x:'cePx', y:'cePy'}[t.dataset.pa]; if(lab && $(lab)) $(lab).textContent = t.dataset.pa === 'z' ? Number(t.value).toFixed(2) : t.value;
+    renderPreview();
+  } else if(t.dataset.sup){
+    const n = busNo(d); if(!n) return;
+    (SUP[n] = SUP[n] || {})[t.dataset.sup] = t.value; sv(LS_S, SUP); renderPreview();
+  }
+});
+
+// drag to move / drag the dot to resize
+$('ceBox').addEventListener('pointerdown', e => {
+  const el = e.target.closest('.idc-el'); if(!el) return;
+  e.preventDefault();
+  const id = el.dataset.el, resize = !!e.target.closest('.idc-rs');
+  if(ED.sel !== id) pickEl(id);
+  const p = getL(ED.type, ED.side)[id], s = scaleNow();
+  const sx = e.clientX, sy = e.clientY, o = {x:p.x, y:p.y, w:p.w, h:p.h};
+  el.setPointerCapture(e.pointerId);
+  const mv = ev => {
+    const dx = (ev.clientX - sx) / s, dy = (ev.clientY - sy) / s;
+    if(resize){ p.w = Math.max(20, Math.round(o.w + dx)); p.h = Math.max(4, Math.round(o.h + dy)); }
+    else { p.x = Math.round(o.x + dx); p.y = Math.round(o.y + dy); }
+    el.style.left = p.x + 'px'; el.style.top = p.y + 'px'; el.style.width = p.w + 'px'; el.style.height = p.h + 'px';
+    ['x', 'y', 'w', 'h'].forEach(k => { const inp = $('cePanel').querySelector(`[data-k="${k}"]`); if(inp) inp.value = p[k]; });
+  };
+  const up = () => {
+    el.removeEventListener('pointermove', mv); el.removeEventListener('pointerup', up); el.removeEventListener('pointercancel', up);
+    saveEl(ED.type, ED.side, id, p); if(resize) renderPreview();
+  };
+  el.addEventListener('pointermove', mv); el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
+});
+$('cvCustom').addEventListener('click', () => {
+  const r = cvSorted()[0] || DATA[0]; if(!r){ toast('No data loaded yet.'); return; }
+  openEditor(r._i, 'front');
+});
+
+/* ---------- bus supervisors ---------- */
+function openSup(){
+  const lines = {}; DATA.forEach(d => { const n = busNo(d); if(n) lines[n] = (lines[n] || 0) + 1; });
+  const keys = Object.keys(lines).sort((a, b) => COLLATOR.compare(a, b));
+  $('supBody').innerHTML = keys.length ? keys.map(n => { const s = SUP[n] || {}; return `<div class="sup-row"><div><b>Bus ${escapeHtml(n)}</b><small>${lines[n]} students</small></div><input type="text" data-n="${escapeHtml(n)}" data-k="phone" value="${escapeHtml(s.phone || '')}" placeholder="Supervisor phone"><input type="text" dir="auto" data-n="${escapeHtml(n)}" data-k="text" value="${escapeHtml(s.text || '')}" placeholder="Name / area (Arabic)"></div>`; }).join('') : '<p class="hint">No bus riders with a bus line were found in the sheet.</p>';
+  $('supOverlay').classList.add('open'); $('supModal').classList.add('open');
+}
+function closeSup(){ $('supOverlay').classList.remove('open'); $('supModal').classList.remove('open'); if(CV.active) renderCardsView(); }
+$('cvSup').addEventListener('click', openSup);
+$('supClose').addEventListener('click', closeSup); $('supDone').addEventListener('click', closeSup); $('supOverlay').addEventListener('click', closeSup);
+$('supModal').addEventListener('click', e => { if(e.target.id === 'supModal') closeSup(); });
+$('supBody').addEventListener('input', e => {
+  const t = e.target; if(!t.dataset.n) return;
+  (SUP[t.dataset.n] = SUP[t.dataset.n] || {})[t.dataset.k] = t.value; sv(LS_S, SUP);
+});
+
+/* ---------- export / import settings ---------- */
+$('cvExport').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify({v:1, layout:CL, photo:PA, sup:SUP}, null, 1)], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'id-card-settings.json';
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  toast('Card settings exported.');
+});
+$('cvImportBtn').addEventListener('click', () => $('cvImport').click());
+$('cvImport').addEventListener('change', async e => {
+  const f = e.target.files[0]; if(!f) return;
+  try{
+    const j = JSON.parse(await f.text());
+    CL = j.layout || {}; PA = j.photo || {}; SUP = j.sup || {};
+    sv(LS_L, CL); sv(LS_P, PA); sv(LS_S, SUP);
+    renderCardsView(); toast('Card settings imported.');
+  }catch(err){ toast('Could not read that settings file.', 5000); }
+  e.target.value = '';
+});
+
+/* ---------- print ---------- */
+$('cvPrint').addEventListener('click', () => {
+  const rows = cvSorted();
+  if(!rows.length){ toast('No cards to print — no students match the filters.'); return; }
+  const sides = CV.side === 'both' ? ['front', 'back'] : [CV.side];
+  const cells = [];
+  rows.forEach(d => sides.forEach(sd => cells.push(`<div class="pc-cell">${cardHTML(d, sd)}</div>`)));
+  const pages = [];
+  for(let i = 0; i < cells.length; i += 8) pages.push(`<div class="pc-page">${cells.slice(i, i + 8).join('')}</div>`);
+  const area = $('cardsPrintArea');
+  area.style.setProperty('--ps', ((94 / 25.4) * 96) / CW);
+  area.innerHTML = pages.join('');
+  let ps = $('reportPageStyle');
+  if(!ps){ ps = document.createElement('style'); ps.id = 'reportPageStyle'; document.head.appendChild(ps); }
+  ps.textContent = '@page { size: A4 portrait; margin: 0; }';
+  document.body.classList.add('pc');
+  fitCards(area);
+  const cleanup = () => { document.body.classList.remove('pc'); area.innerHTML = ''; };
+  window.addEventListener('afterprint', cleanup, {once:true});
+  const imgsReady = () => new Promise(res => {
+    const t0 = Date.now();
+    const chk = () => {
+      const pending = [...area.querySelectorAll('img')].some(im => im.isConnected && !(im.complete && im.naturalWidth > 0));
+      if(!pending || Date.now() - t0 > 10000) res(); else setTimeout(chk, 150);
+    };
+    chk();
+  });
+  const go = () => imgsReady().then(() => { fitCards(area); setTimeout(() => window.print(), 200); });
+  (document.fonts && document.fonts.ready) ? document.fonts.ready.then(go) : go();
+});
+
+document.addEventListener('keydown', e => { if(e.key === 'Escape'){ if(ED.open) closeEditor(); closeSup(); } });
+if(location.hash === '#cards') setView('cards');
+})();
 </script>
 </body>
 </html>
