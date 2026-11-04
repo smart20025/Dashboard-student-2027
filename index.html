@@ -796,6 +796,10 @@ body.view-cards main.wrap > :not(.tabs):not(#cardsView){display:none!important}
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M12 15l-4-4M12 15l4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
         <span class="lbl">Export CSV</span>
       </button>
+      <button class="btn" id="xlBtn" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+        <span class="lbl">Export Excel</span>
+      </button>
       <button class="btn btn-primary" id="openReportBtn" type="button">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h8"/></svg>
         <span class="lbl">Generate report (PDF)</span>
@@ -992,6 +996,22 @@ body.view-cards main.wrap > :not(.tabs):not(#cardsView){display:none!important}
     <div class="modal-head"><h3>Bus supervisors (shown on the back of the card)</h3><button class="x-btn" id="supClose" type="button" aria-label="Close">✕</button></div>
     <div class="modal-body" id="supBody"></div>
     <div class="modal-foot"><div class="cnt">Saved automatically in this browser.</div><div class="btns"><button class="btn btn-primary" id="supDone" type="button">Done</button></div></div>
+  </div>
+</div>
+
+<div class="overlay" id="xlOverlay"></div>
+<div class="modal" id="xlModal">
+  <div class="modal-card">
+    <div class="modal-head"><h3>Export to Excel — choose columns</h3><button class="x-btn" id="xlClose" type="button" aria-label="Close">✕</button></div>
+    <div class="modal-body">
+      <div class="cols-actions" style="margin-bottom:12px">
+        <label class="col-chk" style="flex:1"><input type="radio" name="xlScope" value="view" checked> <span id="xlScopeView">Current results</span></label>
+        <label class="col-chk" style="flex:1"><input type="radio" name="xlScope" value="all"> <span id="xlScopeAll">All students</span></label>
+      </div>
+      <div class="cols-actions"><button type="button" class="mini-btn" id="xlAll">Select all</button><button type="button" class="mini-btn" id="xlNone">Clear all</button></div>
+      <div class="cols-grid" id="xlGrid"></div>
+    </div>
+    <div class="modal-foot"><div class="cnt" id="xlCnt"></div><div class="btns"><button class="btn btn-primary" id="xlGo" type="button">Download .xlsx</button></div></div>
   </div>
 </div>
 
@@ -1883,6 +1903,58 @@ $('exportBtn').addEventListener('click', ()=>{
   a.download = `students_${new Date().toISOString().slice(0,10)}.csv`;
   document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=> URL.revokeObjectURL(a.href), 4000);
   toast(`Exported ${fmt(view.length)} students to CSV.`);
+});
+
+/* ---------------- Excel export (اختيار الأعمدة) ---------------- */
+const XL_KEY = 'sid_xl_cols_v1';
+let xlCols = new Set(COLS.map(c => c.key));
+try{ const sv = JSON.parse(localStorage.getItem(XL_KEY) || 'null'); if(Array.isArray(sv)) xlCols = new Set(sv.filter(k => COLS.some(c => c.key === k))); }catch(e){}
+function xlScope(){ const r = document.querySelector('input[name="xlScope"]:checked'); return r ? r.value : 'view'; }
+function xlRows(){ return xlScope() === 'all' ? DATA : view; }
+function xlUpdateCount(){
+  $('xlScopeView').textContent = `Current results (${fmt(view.length)})`;
+  $('xlScopeAll').textContent = `All students (${fmt(DATA.length)})`;
+  $('xlCnt').textContent = `${xlCols.size} of ${COLS.length} columns · ${fmt(xlRows().length)} rows`;
+}
+function xlRenderGrid(){
+  const grid = $('xlGrid'); grid.innerHTML = '';
+  COLS.forEach(c => {
+    const l = document.createElement('label'); l.className = 'col-chk';
+    l.innerHTML = `<input type="checkbox" ${xlCols.has(c.key) ? 'checked' : ''}> ${escapeHtml(c.label)}`;
+    l.querySelector('input').addEventListener('change', e => {
+      e.target.checked ? xlCols.add(c.key) : xlCols.delete(c.key);
+      try{ localStorage.setItem(XL_KEY, JSON.stringify([...xlCols])); }catch(_){}
+      xlUpdateCount();
+    });
+    grid.appendChild(l);
+  });
+  xlUpdateCount();
+}
+function xlOpen(){ xlRenderGrid(); $('xlOverlay').classList.add('open'); $('xlModal').classList.add('open'); }
+function xlCloseM(){ $('xlOverlay').classList.remove('open'); $('xlModal').classList.remove('open'); }
+$('xlBtn').addEventListener('click', xlOpen);
+$('xlClose').addEventListener('click', xlCloseM);
+$('xlOverlay').addEventListener('click', xlCloseM);
+document.querySelectorAll('input[name="xlScope"]').forEach(r => r.addEventListener('change', xlUpdateCount));
+function xlSave(){ try{ localStorage.setItem(XL_KEY, JSON.stringify([...xlCols])); }catch(_){} }
+$('xlAll').addEventListener('click', () => { COLS.forEach(c => xlCols.add(c.key)); xlSave(); xlRenderGrid(); });
+$('xlNone').addEventListener('click', () => { xlCols.clear(); xlSave(); xlRenderGrid(); });
+$('xlGo').addEventListener('click', async () => {
+  const cols = COLS.filter(c => xlCols.has(c.key));
+  if(!cols.length){ toast('Choose at least one column.'); return; }
+  const rows = xlRows();
+  if(!rows.length){ toast('Nothing to export — no students in this selection.'); return; }
+  try{
+    if(typeof XLSX === 'undefined') await loadScript('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js');
+    const aoa = [cols.map(c => c.label), ...rows.map(d => cols.map(c => String(d[c.key] ?? '')))];
+    const ws = XLSX.utils.aoa_to_sheet(aoa);   // كل القيم نصوص → الأصفار في أول التليفون بتفضل
+    ws['!cols'] = cols.map((c, i) => ({wch: Math.min(45, Math.max(c.label.length + 2, ...aoa.slice(1, 300).map(r => String(r[i]).length + 2)))}));
+    ws['!autofilter'] = {ref: XLSX.utils.encode_range({s:{r:0,c:0}, e:{r:aoa.length - 1, c:cols.length - 1}})};
+    const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Students');
+    XLSX.writeFile(wb, `students_${new Date().toISOString().slice(0,10)}.xlsx`);
+    toast(`Exported ${fmt(rows.length)} students · ${cols.length} columns to Excel.`);
+    xlCloseM();
+  }catch(err){ toast(err && err.message ? err.message : 'Could not create the Excel file.'); }
 });
 
 /* ---------------- upload (معاينة ملف Excel/CSV محلي) ---------------- */
