@@ -650,7 +650,7 @@ body.view-cards main.wrap > :not(.tabs):not(#cardsView){display:none!important}
 
 /* ----- printing cards ----- */
 #cardsPrintArea{position:absolute;left:-30000px;top:0;width:210mm}
-.pc-page{width:210mm;height:296mm;padding:8mm;display:grid;grid-template-columns:repeat(2,94mm);grid-auto-rows:57.2mm;gap:4mm;justify-content:center;align-content:start;box-sizing:border-box;break-after:page;page-break-after:always;overflow:hidden}
+.pc-page{width:210mm;height:296mm;padding:4mm 8mm;display:grid;grid-template-columns:repeat(2,94mm);grid-auto-rows:57.2mm;gap:0 4mm;justify-content:center;align-content:start;box-sizing:border-box;break-after:page;page-break-after:always;overflow:hidden}
 .pc-page:last-child{break-after:auto;page-break-after:auto}
 .pc-cell{position:relative;width:94mm;height:57.2mm;overflow:hidden;border-radius:2mm;outline:.2mm dashed #c4ccd3}
 .pc-cell .idc{position:absolute;left:0;top:0;transform:scale(var(--ps));transform-origin:0 0;contain:strict} /* contain:strict يمنع المتصفح من تصغير الورقة كلها وقت الطباعة (كان بيحسب عرض الكارت 1400px) */
@@ -2828,6 +2828,7 @@ $('cvImport').addEventListener('change', async e => {
 });
 
 /* ---------- print ---------- */
+const PER_PAGE = 10;   // كروت في الورقة: 2 عمود × 5 صفوف (94×57.2مم)
 $('cvPrint').addEventListener('click', () => {
   const rows = SEL.size ? DATA.filter(d => SEL.has(pid(d))).sort((a, b) => gradeSort(a.grade, b.grade) || COLLATOR.compare(a.cls, b.cls) || COLLATOR.compare(a.name, b.name)) : cvSorted();
   if(!rows.length){ toast('No cards to print — no students match the filters.'); return; }
@@ -2836,8 +2837,8 @@ $('cvPrint').addEventListener('click', () => {
   if(CV.side === 'both'){
     /* الوش في صفحة والظهر في الصفحة اللي بعدها — الظهر معكوس الأعمدة (يمين↔شمال)
        عشان لما تطبع على الوجهين (قلب على الحافة الطويلة) كل ظهر يقع بالظبط ورا الوش بتاعه */
-    for(let i = 0; i < rows.length; i += 8){
-      const chunk = rows.slice(i, i + 8);
+    for(let i = 0; i < rows.length; i += PER_PAGE){
+      const chunk = rows.slice(i, i + PER_PAGE);
       const fr = [], bk = [];
       for(let j = 0; j < chunk.length; j += 2){
         const a = chunk[j], b = chunk[j + 1] || null;
@@ -2849,7 +2850,7 @@ $('cvPrint').addEventListener('click', () => {
     }
   } else {
     const cells = rows.map(d => cell(d, CV.side));
-    for(let i = 0; i < cells.length; i += 8) pages.push(`<div class="pc-page">${cells.slice(i, i + 8).join('')}</div>`);
+    for(let i = 0; i < cells.length; i += PER_PAGE) pages.push(`<div class="pc-page">${cells.slice(i, i + PER_PAGE).join('')}</div>`);
   }
   const area = $('cardsPrintArea');
   area.style.setProperty('--ps', ((94 / 25.4) * 96) / CW);
