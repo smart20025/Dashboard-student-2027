@@ -650,9 +650,9 @@ body.view-cards main.wrap > :not(.tabs):not(#cardsView){display:none!important}
 
 /* ----- printing cards ----- */
 #cardsPrintArea{position:absolute;left:-30000px;top:0;width:210mm}
-.pc-page{width:210mm;height:296mm;padding:3.5mm 8mm;display:grid;grid-template-columns:repeat(2,91mm);grid-auto-rows:55.4mm;gap:3mm;justify-content:center;align-content:start;box-sizing:border-box;break-after:page;page-break-after:always;overflow:hidden}
+.pc-page{width:210mm;height:296mm;padding:4mm 8mm;display:grid;grid-template-columns:repeat(2,87.4mm);grid-auto-rows:53.2mm;gap:5mm;justify-content:center;align-content:start;box-sizing:border-box;break-after:page;page-break-after:always;overflow:hidden}
 .pc-page:last-child{break-after:auto;page-break-after:auto}
-.pc-cell{position:relative;width:91mm;height:55.4mm;overflow:hidden;border-radius:2mm;outline:.2mm dashed #c4ccd3}
+.pc-cell{position:relative;width:87.4mm;height:53.2mm;overflow:hidden;border-radius:2mm;outline:.2mm dashed #c4ccd3}
 .pc-cell .idc{position:absolute;left:0;top:0;transform:scale(var(--ps));transform-origin:0 0;contain:strict} /* contain:strict يمنع المتصفح من تصغير الورقة كلها وقت الطباعة (كان بيحسب عرض الكارت 1400px) */
 @media print{
   body:not(.pc) #cardsPrintArea{display:none!important}
@@ -2828,7 +2828,7 @@ $('cvImport').addEventListener('change', async e => {
 });
 
 /* ---------- print ---------- */
-const PER_PAGE = 10;   // كروت في الورقة: 2 عمود × 5 صفوف (91×55.4مم) ومسافة 3مم بينهم
+const PER_PAGE = 10;   // كروت في الورقة: 2 عمود × 5 صفوف (87.4×53.2مم) ومسافة 5مم بينهم
 $('cvPrint').addEventListener('click', () => {
   const rows = SEL.size ? DATA.filter(d => SEL.has(pid(d))).sort((a, b) => gradeSort(a.grade, b.grade) || COLLATOR.compare(a.cls, b.cls) || COLLATOR.compare(a.name, b.name)) : cvSorted();
   if(!rows.length){ toast('No cards to print — no students match the filters.'); return; }
@@ -2853,7 +2853,7 @@ $('cvPrint').addEventListener('click', () => {
     for(let i = 0; i < cells.length; i += PER_PAGE) pages.push(`<div class="pc-page">${cells.slice(i, i + PER_PAGE).join('')}</div>`);
   }
   const area = $('cardsPrintArea');
-  area.style.setProperty('--ps', ((91 / 25.4) * 96) / CW);
+  area.style.setProperty('--ps', ((87.4 / 25.4) * 96) / CW);
   area.innerHTML = pages.join('');
   let ps = $('reportPageStyle');
   if(!ps){ ps = document.createElement('style'); ps.id = 'reportPageStyle'; document.head.appendChild(ps); }
